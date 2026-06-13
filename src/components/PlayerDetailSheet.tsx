@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { Player } from '../lib/types';
+import { formatWithSign, formatAmount } from '../lib/format';
 
 interface PlayerDetailSheetProps {
   player: Player | null;
@@ -25,9 +26,9 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
 
   const stats = [
     { label: 'Games Played', value: String(player.gamesPlayed), color: 'text-gray-900' },
-    { label: 'Avg per Game', value: `${player.avgPerGame >= 0 ? '+' : ''}${player.avgPerGame.toLocaleString()}`, color: player.avgPerGame >= 0 ? 'text-green-600' : 'text-red-600' },
-    { label: 'Best Game', value: `+${player.bestResult.toLocaleString()}`, color: 'text-green-600' },
-    { label: 'Worst Game', value: `${player.worstResult.toLocaleString()}`, color: 'text-red-600' },
+    { label: 'Avg per Game', value: formatWithSign(player.avgPerGame), color: player.avgPerGame >= 0 ? 'text-green-600' : 'text-red-600' },
+    { label: 'Best Game', value: `+${formatAmount(player.bestResult)}`, color: 'text-green-600' },
+    { label: 'Worst Game', value: formatWithSign(player.worstResult), color: 'text-red-600' },
   ];
 
   return (
@@ -49,9 +50,9 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
               {player.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
-              <h2 className="text-gray-900 text-2xl mb-1">{player.name}</h2>
-              <p className={`text-2xl font-mono ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {isPositive ? '+' : ''}{player.totalWinnings.toLocaleString()}
+              <h2 className="text-gray-900 text-2xl font-bold mb-1">{player.name}</h2>
+              <p className={`text-2xl font-mono font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {formatWithSign(player.totalWinnings)}
               </p>
             </div>
           </div>
@@ -126,8 +127,8 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
                       </span>
                       {result.session && <span className="text-xs text-gray-400 ml-2">{result.session}</span>}
                     </div>
-                    <span className={`font-mono text-sm ${result.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {result.amount >= 0 ? '+' : ''}{result.amount.toLocaleString()}
+                    <span className={`font-mono font-semibold text-sm ${result.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatWithSign(result.amount, false)}
                     </span>
                   </div>
                   {i < player.results.length - 1 && <div className="h-px bg-gray-100" />}

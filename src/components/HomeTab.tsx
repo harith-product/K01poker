@@ -1,6 +1,7 @@
 import { Trophy, Crown, Medal, Award, ChevronRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import type { Player } from '../lib/types';
+import { formatWithSign } from '../lib/format';
 
 interface HomeTabProps {
   players: Player[];
@@ -55,14 +56,14 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
   return (
     <div className="max-w-lg mx-auto px-4 pt-6 pb-8 space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-gray-900 text-xl">K01 Poker Leaderboard</h2>
+        <h2 className="text-gray-900 text-2xl font-bold">K01 Poker Leaderboard</h2>
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
             className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg shadow-sm text-sm"
           >
-            <span className="text-gray-900">{labels[period]}</span>
-            <ChevronDown className="w-4 h-4 text-gray-600" />
+            <span className="text-gray-700 font-medium">{labels[period]}</span>
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           </button>
           {open && (
             <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg z-10 min-w-[140px]">
@@ -83,7 +84,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
       {/* Podium - Top 3 */}
       {top3.length >= 3 && (
         <div className="bg-white rounded-3xl p-6 shadow-lg">
-          <h2 className="text-gray-900 text-xl mb-6">Top 3 Players</h2>
+          <h2 className="text-gray-900 text-xl font-bold mb-6">Top 3 Players</h2>
           <div className="flex items-end justify-evenly">
             {/* 2nd */}
             <button onClick={() => onPlayerClick(top3[1].id)} className="flex flex-col items-center w-24">
@@ -92,14 +93,14 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
                   <Medal className="w-10 h-10 text-white" />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center shadow-md">
-                  <span className="text-gray-600 text-sm">2</span>
+                  <span className="text-gray-600 text-sm font-bold">2</span>
                 </div>
               </div>
-              <p className="text-gray-900 truncate w-full text-center text-sm mb-1">{top3[1].name}</p>
-              <p className={`font-mono text-sm ${top3[1].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[1].totalWinnings >= 0 ? '+' : ''}{top3[1].totalWinnings.toLocaleString()}
+              <p className="text-gray-900 font-bold truncate w-full text-center text-sm mb-1">{top3[1].name}</p>
+              <p className={`font-mono font-semibold text-sm ${top3[1].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatWithSign(top3[1].totalWinnings)}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">{top3[1].gamesPlayed} games</p>
+              <p className="text-xs text-gray-400 mt-0.5">{top3[1].gamesPlayed} games</p>
             </button>
 
             {/* 1st */}
@@ -110,14 +111,14 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
                   <Trophy className="w-12 h-12 text-white" />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center shadow-md">
-                  <span className="text-orange-600">1</span>
+                  <span className="text-orange-600 font-bold">1</span>
                 </div>
               </div>
-              <p className="text-gray-900 truncate w-full text-center mb-1">{top3[0].name}</p>
-              <p className={`font-mono ${top3[0].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[0].totalWinnings >= 0 ? '+' : ''}{top3[0].totalWinnings.toLocaleString()}
+              <p className="text-gray-900 font-bold truncate w-full text-center mb-1">{top3[0].name}</p>
+              <p className={`font-mono font-semibold ${top3[0].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatWithSign(top3[0].totalWinnings)}
               </p>
-              <p className="text-sm text-gray-500 mt-0.5">{top3[0].gamesPlayed} games</p>
+              <p className="text-sm text-gray-400 mt-0.5">{top3[0].gamesPlayed} games</p>
             </button>
 
             {/* 3rd */}
@@ -127,14 +128,14 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
                   <Award className="w-10 h-10 text-white" />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border-2 border-orange-300 flex items-center justify-center shadow-md">
-                  <span className="text-orange-600 text-sm">3</span>
+                  <span className="text-orange-600 text-sm font-bold">3</span>
                 </div>
               </div>
-              <p className="text-gray-900 truncate w-full text-center text-sm mb-1">{top3[2].name}</p>
-              <p className={`font-mono text-sm ${top3[2].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[2].totalWinnings >= 0 ? '+' : ''}{top3[2].totalWinnings.toLocaleString()}
+              <p className="text-gray-900 font-bold truncate w-full text-center text-sm mb-1">{top3[2].name}</p>
+              <p className={`font-mono font-semibold text-sm ${top3[2].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatWithSign(top3[2].totalWinnings)}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">{top3[2].gamesPlayed} games</p>
+              <p className="text-xs text-gray-400 mt-0.5">{top3[2].gamesPlayed} games</p>
             </button>
           </div>
         </div>
@@ -142,25 +143,28 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
 
       {/* 4th onwards */}
       <div className="space-y-2">
-        {rest.map((player, index) => (
-          <button
-            key={player.id}
-            onClick={() => onPlayerClick(player.id)}
-            className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-3"
-          >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-mono bg-gray-100 text-gray-600">
-              {index + 4}
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-gray-900">{player.name}</p>
-              <p className="text-xs text-gray-500">{player.gamesPlayed} games</p>
-            </div>
-            <p className={`font-mono ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {player.totalWinnings >= 0 ? '+' : ''}{player.totalWinnings.toLocaleString()}
-            </p>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
-          </button>
-        ))}
+        {rest.map((player, index) => {
+          const rank = index + 4;
+          return (
+            <button
+              key={player.id}
+              onClick={() => onPlayerClick(player.id)}
+              className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-gray-100 text-gray-500 flex-shrink-0">
+                {rank}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-gray-900 font-bold text-base truncate">{player.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{player.gamesPlayed} games</p>
+              </div>
+              <p className={`font-mono font-semibold text-base ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatWithSign(player.totalWinnings)}
+              </p>
+              <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+            </button>
+          );
+        })}
       </div>
     </div>
   );
