@@ -4,19 +4,28 @@ import type { Player, GameSession, BalanceData } from './types';
 // Set this to your published CSV URL
 const SHEET_CSV_URL = import.meta.env.VITE_SHEET_CSV_URL || '';
 const BALANCE_CSV_URL = import.meta.env.VITE_BALANCE_CSV_URL || '';
+const OFFLINE_CSV_URL = import.meta.env.VITE_OFFLINE_CSV_URL || '';
+
+const MONTHS: Record<string, string> = {
+  Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+};
 
 function parseDate(raw: string): string {
-  // Normalize dates like "04-Jun", "4-Jun", etc. → "2025-06-04"
+  // "04-Jun" → "2026-06-04"
   if (!raw || raw.trim() === '') return '';
-  const months: Record<string, string> = {
-    Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
-    Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
-  };
-  const match = raw.trim().match(/^(\d{1,2})-([A-Za-z]{3})$/);
-  if (!match) return raw.trim();
-  const [, day, mon] = match;
-  const year = new Date().getFullYear();
-  return `${year}-${months[mon] ?? '01'}-${day.padStart(2, '0')}`;
+  const short = raw.trim().match(/^(\d{1,2})-([A-Za-z]{3})$/);
+  if (short) {
+    const [, day, mon] = short;
+    return `${new Date().getFullYear()}-${MONTHS[mon] ?? '01'}-${day.padStart(2, '0')}`;
+  }
+  // "14 Nov 2025" → "2025-11-14"
+  const long = raw.trim().match(/^(\d{1,2})\s([A-Za-z]{3})\s(\d{4})$/);
+  if (long) {
+    const [, day, mon, year] = long;
+    return `${year}-${MONTHS[mon] ?? '01'}-${day.padStart(2, '0')}`;
+  }
+  return raw.trim();
 }
 
 function parseAmount(val: string): number {
@@ -24,12 +33,10 @@ function parseAmount(val: string): number {
   return parseFloat(val.replace(/,/g, '')) || 0;
 }
 
-export async function fetchSheetData(): Promise<{ players: Player[]; sessions: GameSession[] }> {
-  if (!SHEET_CSV_URL) {
-    return { players: [], sessions: [] };
-  }
+async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string): Promise<{ players: Player[]; sessions: GameSession[] }> {
+  if (!url) return { players: [], sessions: [] };
 
-  const resp = await fetch(SHEET_CSV_URL);
+  const resp = await fetch(url);
   const text = await resp.text();
 
   const rows = text.split('\n').map(r =>
@@ -52,7 +59,8 @@ export async function fetchSheetData(): Promise<{ players: Player[]; sessions: G
     if (!row[0] || row[0] === '') continue;
 
     const date = parseDate(row[0]);
-    const session = row[1] || '';
+    const rawSession = row[1] || '';
+    const session = sessionFilter ? sessionFilter(rawSession) : rawSession;
     const playerPnL: Record<string, number> = {};
 
     playerNames.forEach((name, idx) => {
@@ -86,6 +94,15 @@ export async function fetchSheetData(): Promise<{ players: Player[]; sessions: G
     .filter(p => p.gamesPlayed > 0);
 
   return { players, sessions };
+}
+
+export async function fetchSheetData() {
+  return parseSheetCSV(SHEET_CSV_URL);
+}
+
+export async function fetchOfflineSheetData() {
+  // Offline sheet uses "1" in session column — treat as empty
+  return parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s));
 }
 
 export async function fetchBalanceData(): Promise<BalanceData> {
