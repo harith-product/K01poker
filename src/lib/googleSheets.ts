@@ -1,8 +1,9 @@
-import type { Player, GameSession } from './types';
+import type { Player, GameSession, BalanceData } from './types';
 
 // The Google Sheet must be published to the web as CSV (File > Share > Publish to web > CSV)
 // Set this to your published CSV URL
 const SHEET_CSV_URL = import.meta.env.VITE_SHEET_CSV_URL || '';
+const BALANCE_CSV_URL = import.meta.env.VITE_BALANCE_CSV_URL || '';
 
 function parseDate(raw: string): string {
   // Normalize dates like "04-Jun", "4-Jun", etc. → "2025-06-04"
@@ -85,4 +86,40 @@ export async function fetchSheetData(): Promise<{ players: Player[]; sessions: G
     .filter(p => p.gamesPlayed > 0);
 
   return { players, sessions };
+}
+
+export async function fetchBalanceData(): Promise<BalanceData> {
+  if (!BALANCE_CSV_URL) return { owesHouse: [], houseOwes: [] };
+
+  const resp = await fetch(BALANCE_CSV_URL);
+  const text = await resp.text();
+
+  // Parse CSV rows, handling quoted values like "1,000.00"
+  const rows = text.split('\n').slice(1); // skip header
+
+  const owesHouse: BalanceData['owesHouse'] = [];
+  const houseOwes: BalanceData['houseOwes'] = [];
+
+  rows.forEach(row => {
+    // Split respecting quoted commas
+    const cols: string[] = [];
+    let cur = '';
+    let inQuote = false;
+    for (const ch of row) {
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    cols.push(cur.trim());
+
+    const oweName = cols[0]?.trim();
+    const oweAmt = parseAmount(cols[1] ?? '');
+    const houseName = cols[2]?.trim();
+    const houseAmt = parseAmount(cols[3] ?? '');
+
+    if (oweName) owesHouse.push({ name: oweName, amount: oweAmt });
+    if (houseName) houseOwes.push({ name: houseName, amount: houseAmt });
+  });
+
+  return { owesHouse, houseOwes };
 }

@@ -4,6 +4,16 @@ export interface GameSession {
   players: Record<string, number>; // playerName -> P&L amount
 }
 
+export interface BalanceEntry {
+  name: string;
+  amount: number;
+}
+
+export interface BalanceData {
+  owesHouse: BalanceEntry[];   // negative amounts — players owe house
+  houseOwes: BalanceEntry[];   // positive amounts — house owes players
+}
+
 export interface Player {
   id: string;
   name: string;

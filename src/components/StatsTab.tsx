@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Flame, Moon, Zap, Home, ChevronDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Flame, Moon, Zap, Home, ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import type { Player, GameSession } from '../lib/types';
 
@@ -56,9 +56,23 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
 
   const mostGames = [...fp].map(p => ({ player: p, value: p.gamesPlayed })).sort((a, b) => b.value - a.value).slice(0, 5);
 
+  const topAvgWins = [...fp]
+    .filter(p => p.gamesPlayed >= 5)
+    .map(p => ({ player: p, avg: p.totalWinnings / p.gamesPlayed }))
+    .filter(p => p.avg > 0)
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 5);
+
+  const topAvgLosses = [...fp]
+    .filter(p => p.gamesPlayed >= 5)
+    .map(p => ({ player: p, avg: p.totalWinnings / p.gamesPlayed }))
+    .filter(p => p.avg < 0)
+    .sort((a, b) => a.avg - b.avg)
+    .slice(0, 5);
+
   const categories = [
-    { label: 'Biggest Wins', data: biggestWin, Icon: TrendingUp, color: 'from-green-400 to-emerald-500', valueColor: 'text-green-700', fmt: (v: number) => `₹${v.toLocaleString()}` },
-    { label: 'Biggest Losses', data: biggestLoss, Icon: TrendingDown, color: 'from-red-400 to-rose-500', valueColor: 'text-red-700', fmt: (v: number) => `₹${v.toLocaleString()}` },
+    { label: 'Biggest Wins', data: biggestWin, Icon: TrendingUp, color: 'from-green-400 to-emerald-500', valueColor: 'text-green-700', fmt: (v: number) => `${v.toLocaleString()}` },
+    { label: 'Biggest Losses', data: biggestLoss, Icon: TrendingDown, color: 'from-red-400 to-rose-500', valueColor: 'text-red-700', fmt: (v: number) => `${v.toLocaleString()}` },
     { label: 'Win Streaks', data: winStreak, Icon: Flame, color: 'from-orange-400 to-red-500', valueColor: 'text-green-700', fmt: (v: number) => `${v} games` },
     { label: 'Losing Streaks', data: loseStreak, Icon: Moon, color: 'from-indigo-400 to-purple-500', valueColor: 'text-red-700', fmt: (v: number) => `${v} games` },
     { label: 'Most Games Played', data: mostGames, Icon: Zap, color: 'from-purple-400 to-pink-500', valueColor: 'text-gray-900', fmt: (v: number) => `${v} games` },
@@ -118,6 +132,66 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
           </div>
         ))}
       </div>
+
+      {/* Top Average Wins (5+ games) */}
+      {topAvgWins.length > 0 && (
+        <div className="bg-white rounded-3xl p-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md">
+              <Star className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-gray-900 text-lg font-semibold">Top 5 Avg Wins <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+          </div>
+          <div className="space-y-0">
+            {topAvgWins.map((item, index) => (
+              <div key={item.player.id}>
+                <button
+                  onClick={() => onPlayerClick(item.player.id)}
+                  className="w-full flex items-center gap-3 py-3 px-1 hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
+                  <div className="flex-1 text-left">
+                    <p className="text-gray-900">{item.player.name}</p>
+                    <p className="text-xs text-gray-400">{item.player.gamesPlayed} games</p>
+                  </div>
+                  <span className={`font-mono ${item.avg >= 0 ? 'text-green-600' : 'text-red-600'}`}>{item.avg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/game</span>
+                </button>
+                {index < topAvgWins.length - 1 && <div className="h-px bg-gray-100" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top Avg Losses (5+ games) */}
+      {topAvgLosses.length > 0 && (
+        <div className="bg-white rounded-3xl p-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center shadow-md">
+              <TrendingDown className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-gray-900 text-lg font-semibold">Top 5 Avg Losses <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+          </div>
+          <div className="space-y-0">
+            {topAvgLosses.map((item, index) => (
+              <div key={item.player.id}>
+                <button
+                  onClick={() => onPlayerClick(item.player.id)}
+                  className="w-full flex items-center gap-3 py-3 px-1 hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
+                  <div className="flex-1 text-left">
+                    <p className="text-gray-900">{item.player.name}</p>
+                    <p className="text-xs text-gray-400">{item.player.gamesPlayed} games</p>
+                  </div>
+                  <span className="text-red-600 font-mono">{item.avg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/game</span>
+                </button>
+                {index < topAvgLosses.length - 1 && <div className="h-px bg-gray-100" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* House Stats */}
       <div className="bg-white rounded-3xl p-5 shadow-sm">

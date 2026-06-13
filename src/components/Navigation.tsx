@@ -1,6 +1,6 @@
-import { Home, BarChart2, Calendar } from 'lucide-react';
+import { Home, BarChart2, Calendar, Wallet } from 'lucide-react';
 
-export type TabType = 'home' | 'leaderboard' | 'games';
+export type TabType = 'home' | 'leaderboard' | 'games' | 'balance';
 
 interface NavigationProps {
   activeTab: TabType;
@@ -12,6 +12,7 @@ export function Navigation({ activeTab, setActiveTab }: NavigationProps) {
     { id: 'home' as TabType, label: 'Home', Icon: Home },
     { id: 'leaderboard' as TabType, label: 'Stats', Icon: BarChart2 },
     { id: 'games' as TabType, label: 'Games', Icon: Calendar },
+    { id: 'balance' as TabType, label: 'Balance', Icon: Wallet },
   ];
 
   return (

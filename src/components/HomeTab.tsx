@@ -97,7 +97,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
               </div>
               <p className="text-gray-900 truncate w-full text-center text-sm mb-1">{top3[1].name}</p>
               <p className={`font-mono text-sm ${top3[1].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[1].totalWinnings >= 0 ? '+' : ''}₹{top3[1].totalWinnings.toLocaleString()}
+                {top3[1].totalWinnings >= 0 ? '+' : ''}{top3[1].totalWinnings.toLocaleString()}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">{top3[1].gamesPlayed} games</p>
             </button>
@@ -115,7 +115,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
               </div>
               <p className="text-gray-900 truncate w-full text-center mb-1">{top3[0].name}</p>
               <p className={`font-mono ${top3[0].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[0].totalWinnings >= 0 ? '+' : ''}₹{top3[0].totalWinnings.toLocaleString()}
+                {top3[0].totalWinnings >= 0 ? '+' : ''}{top3[0].totalWinnings.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500 mt-0.5">{top3[0].gamesPlayed} games</p>
             </button>
@@ -132,7 +132,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
               </div>
               <p className="text-gray-900 truncate w-full text-center text-sm mb-1">{top3[2].name}</p>
               <p className={`font-mono text-sm ${top3[2].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {top3[2].totalWinnings >= 0 ? '+' : ''}₹{top3[2].totalWinnings.toLocaleString()}
+                {top3[2].totalWinnings >= 0 ? '+' : ''}{top3[2].totalWinnings.toLocaleString()}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">{top3[2].gamesPlayed} games</p>
             </button>
@@ -156,7 +156,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
               <p className="text-xs text-gray-500">{player.gamesPlayed} games</p>
             </div>
             <p className={`font-mono ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {player.totalWinnings >= 0 ? '+' : ''}₹{player.totalWinnings.toLocaleString()}
+              {player.totalWinnings >= 0 ? '+' : ''}{player.totalWinnings.toLocaleString()}
             </p>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
