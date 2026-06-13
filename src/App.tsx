@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navigation, type TabType } from './components/Navigation';
 import { HomeTab } from './components/HomeTab';
 import { StatsTab } from './components/StatsTab';
@@ -16,6 +16,7 @@ export default function App() {
   const [balance, setBalance] = useState<BalanceData>({ owesHouse: [], houseOwes: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     Promise.all([fetchSheetData(), fetchBalanceData()])
@@ -28,11 +29,17 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Fix #3: scroll to top on tab switch
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    mainRef.current?.scrollTo({ top: 0 });
+  };
+
   const selectedPlayer = players.find(p => p.id === selectedPlayerId) ?? null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
-      <main className="pb-24 min-h-screen">
+      <main ref={mainRef} className="pb-24 min-h-screen overflow-y-auto h-screen">
         {loading && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-500">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -55,13 +62,24 @@ export default function App() {
         )}
       </main>
 
-      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navigation activeTab={activeTab} setActiveTab={handleTabChange} />
 
-      <PlayerDetailSheet
-        player={selectedPlayer}
-        open={!!selectedPlayerId}
-        onClose={() => setSelectedPlayerId(null)}
-      />
+      {/* Fix #2: proper full-screen overlay with dark backdrop */}
+      {selectedPlayerId && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setSelectedPlayerId(null)}
+          />
+          <div className="relative w-full max-w-lg mx-auto">
+            <PlayerDetailSheet
+              player={selectedPlayer}
+              open={!!selectedPlayerId}
+              onClose={() => setSelectedPlayerId(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

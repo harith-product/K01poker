@@ -1,7 +1,11 @@
 import { Trophy, Crown, Medal, Award, ChevronRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import type { Player } from '../lib/types';
-import { formatWithSign } from '../lib/format';
+
+function formatWithSign(value: number): string {
+  const str = value.toLocaleString();
+  return value >= 0 ? `+${str}` : str;
+}
 
 interface HomeTabProps {
   players: Player[];
