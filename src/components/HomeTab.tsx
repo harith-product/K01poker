@@ -1,6 +1,7 @@
-import { Trophy, Crown, Medal, Award, ChevronRight, ChevronDown } from 'lucide-react';
+import { Trophy, Crown, Medal, Award, ChevronRight, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 import type { Player } from '../lib/types';
+import type { GameMode } from '../App';
 
 function formatWithSign(value: number): string {
   const str = value.toLocaleString();
@@ -10,6 +11,8 @@ function formatWithSign(value: number): string {
 interface HomeTabProps {
   players: Player[];
   onPlayerClick: (playerId: string) => void;
+  mode: GameMode;
+  onModeChange: (m: GameMode) => void;
 }
 
 type TimePeriod = 'overall' | '30days' | '7days';
@@ -40,7 +43,7 @@ const labels: Record<TimePeriod, string> = {
   '7days': 'Last 7 days',
 };
 
-export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
+export function HomeTab({ players, onPlayerClick, mode, onModeChange }: HomeTabProps) {
   const [period, setPeriod] = useState<TimePeriod>('overall');
   const [open, setOpen] = useState(false);
 
@@ -60,7 +63,16 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
   return (
     <div className="max-w-lg mx-auto px-4 pt-6 pb-8 space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-gray-900 text-2xl font-bold">K01 Poker Leaderboard</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-gray-900 text-2xl font-bold">K01 Poker</h2>
+          <button
+            onClick={() => onModeChange(mode === 'online' ? 'offline' : 'online')}
+            className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg shadow-sm border border-gray-100"
+          >
+            <span className="text-teal-600 font-semibold text-sm">{mode === 'online' ? 'Online' : 'Offline'}</span>
+            <ChevronsUpDown className="w-3.5 h-3.5 text-teal-500" />
+          </button>
+        </div>
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
