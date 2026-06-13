@@ -29,6 +29,13 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
     cumulative: player.results.slice(0, i + 1).reduce((s, x) => s + x.amount, 0),
   }));
 
+  const values = chartData.map(d => d.cumulative);
+  const minVal = Math.min(...values, 0);
+  const maxVal = Math.max(...values, 0);
+  const range = maxVal - minVal || 1;
+  // zero's position as % from top (0% = top = maxVal, 100% = bottom = minVal)
+  const zeroPct = `${((maxVal / range) * 100).toFixed(1)}%`;
+
   const stats = [
     { label: 'Games Played', value: String(player.gamesPlayed), color: 'text-gray-900' },
     { label: 'Avg per Game', value: fmt(player.avgPerGame, true), color: player.avgPerGame >= 0 ? 'text-green-600' : 'text-red-600' },
@@ -76,9 +83,17 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#16a34a" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                {/* Stroke gradient: green above zero, red below */}
+                <linearGradient id="strokeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset={zeroPct} stopColor="#16a34a" />
+                  <stop offset={zeroPct} stopColor="#dc2626" />
+                </linearGradient>
+                {/* Fill gradient: green tint above, red tint below */}
+                <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#16a34a" stopOpacity={0.15} />
+                  <stop offset={zeroPct} stopColor="#16a34a" stopOpacity={0.05} />
+                  <stop offset={zeroPct} stopColor="#dc2626" stopOpacity={0.05} />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity={0.15} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -105,9 +120,9 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
               <Area
                 type="monotone"
                 dataKey="cumulative"
-                stroke="#16a34a"
+                stroke="url(#strokeGrad)"
                 strokeWidth={2}
-                fill="url(#gradGreen)"
+                fill="url(#fillGrad)"
                 dot={false}
                 activeDot={{ r: 4, fill: '#16a34a' }}
               />
