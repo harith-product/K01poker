@@ -159,17 +159,16 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
     setSharing(true);
     try {
       const canvas = await html2canvas(shareCardRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f3ff' });
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], `${player.name}-poker.png`, { type: 'image/png' });
-        const url = `${window.location.origin}/player/${player.id}`;
-        const text = `Hey, check out my poker performance using the link below\n${url}`;
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], text });
-        } else {
-          await navigator.share({ text, url });
-        }
-      }, 'image/png');
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) return;
+      const file = new File([blob], `${player.name}-poker.png`, { type: 'image/png' });
+      const url = `${window.location.origin}/player/${player.id}`;
+      const text = `Hey, check out my poker performance using the link below\n${url}`;
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `${player.name}'s Poker Stats`, text });
+      } else {
+        await navigator.share({ title: `${player.name}'s Poker Stats`, text });
+      }
     } catch {
       // user cancelled or not supported
     } finally {
