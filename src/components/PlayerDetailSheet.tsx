@@ -95,7 +95,7 @@ function CalendarView({ player }: { player: Player }) {
               <span className="text-xs font-semibold leading-none" style={{ color: style?.text ?? '#6b7280' }}>{day}</span>
               {amount !== null && (
                 <span className="text-[9px] font-bold mt-0.5 leading-none" style={{ color: style!.text }}>
-                  {amount >= 0 ? '+' : ''}₹{Math.abs(amount) >= 1000 ? `${(amount / 1000).toFixed(1)}K` : amount}
+                  {amount >= 0 ? '+' : ''}₹{Math.abs(amount) >= 1000 ? `${(amount / 1000).toFixed(1)}K` : Math.round(amount)}
                 </span>
               )}
             </div>
