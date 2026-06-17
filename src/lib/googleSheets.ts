@@ -96,16 +96,45 @@ async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string)
   return { players, sessions };
 }
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function readCache<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return data as T;
+  } catch { return null; }
+}
+
+function writeCache(key: string, data: unknown) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
+
+type SheetResult = { players: Player[]; sessions: GameSession[] };
+
+async function fetchWithCache(key: string, fetcher: () => Promise<SheetResult>): Promise<SheetResult> {
+  const cached = readCache<SheetResult>(key);
+  if (cached) {
+    // Refresh in background
+    fetcher().then(fresh => writeCache(key, fresh)).catch(() => {});
+    return cached;
+  }
+  const fresh = await fetcher();
+  writeCache(key, fresh);
+  return fresh;
+}
+
 export async function fetchSheetData() {
-  return parseSheetCSV(SHEET_CSV_URL);
+  return fetchWithCache('cache_online', () => parseSheetCSV(SHEET_CSV_URL));
 }
 
 export async function fetchOfflineSheetData() {
-  // Offline sheet uses "1" in session column — treat as empty
-  return parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s));
+  return fetchWithCache('cache_offline', () => parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s)));
 }
 
-export async function fetchBalanceData(): Promise<BalanceData> {
+async function fetchBalanceRaw(): Promise<BalanceData> {
   if (!BALANCE_CSV_URL) return { owesHouse: [], houseOwes: [] };
 
   const resp = await fetch(BALANCE_CSV_URL);
@@ -139,4 +168,15 @@ export async function fetchBalanceData(): Promise<BalanceData> {
   });
 
   return { owesHouse, houseOwes };
+}
+
+export async function fetchBalanceData(): Promise<BalanceData> {
+  const cached = readCache<BalanceData>('cache_balance');
+  if (cached) {
+    fetchBalanceRaw().then(fresh => writeCache('cache_balance', fresh)).catch(() => {});
+    return cached;
+  }
+  const fresh = await fetchBalanceRaw();
+  writeCache('cache_balance', fresh);
+  return fresh;
 }
