@@ -89,9 +89,9 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-8 flex flex-col" style={{ minHeight: 'calc(100vh - 80px)' }}>
+    <div className="max-w-lg mx-auto px-4 pt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 80px)' }}>
       <Toast message={message} />
-      <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col flex-1">
+      <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col flex-1 pb-24">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={onBack} className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
             <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -99,7 +99,7 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
           <h1 className="text-gray-900 text-2xl font-bold">Create Session</h1>
         </div>
 
-        <div className="space-y-6 flex flex-col flex-1">
+        <div className="space-y-6 flex flex-col flex-1 overflow-y-auto">
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Buy-in Amount</p>
             <input type="number" placeholder="500" value={buyInAmount} onChange={e => setBuyInAmount(e.target.value)}
@@ -146,11 +146,14 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
             </div>
           </div>
 
-          <button onClick={handleCreate} disabled={creating}
-            className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-sm mt-auto disabled:opacity-60">
-            {creating ? 'Creating…' : 'Create Session'}
-          </button>
         </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-24 pt-3 bg-gradient-to-t from-white via-white to-transparent max-w-lg mx-auto">
+        <button onClick={handleCreate} disabled={creating}
+          className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-60">
+          {creating ? 'Creating…' : 'Create Session'}
+        </button>
       </div>
     </div>
   );
