@@ -74,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   await initSchema();
   for (const m of INITIAL_MEMBERS) {
-    await sql`INSERT INTO members (id, name) VALUES (${m.id}, ${m.name}) ON CONFLICT (id) DO NOTHING`;
+    await sql`INSERT INTO members (id, name) VALUES (${m.id}, ${m.name}) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`;
   }
   return res.status(200).json({ ok: true, seeded: INITIAL_MEMBERS.length });
 }
