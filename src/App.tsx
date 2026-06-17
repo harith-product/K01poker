@@ -32,16 +32,22 @@ function useAppData(): AppData {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([fetchSheetData(), fetchOfflineSheetData(), fetchBalanceData()])
-      .then(([online, offline, bal]) => {
-        setOnlinePlayers(online.players);
-        setOnlineSessions(online.sessions);
+    // Load each source independently — offline shows as soon as it's ready
+    fetchOfflineSheetData()
+      .then(offline => {
         setOfflinePlayers(offline.players);
         setOfflineSessions(offline.sessions);
-        setBalance(bal);
+        setLoading(false);
       })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+      .catch(err => { setError(err.message); setLoading(false); });
+
+    fetchSheetData()
+      .then(online => { setOnlinePlayers(online.players); setOnlineSessions(online.sessions); })
+      .catch(() => {});
+
+    fetchBalanceData()
+      .then(bal => setBalance(bal))
+      .catch(() => {});
   }, []);
 
   return { onlinePlayers, onlineSessions, offlinePlayers, offlineSessions, balance, loading, error };
