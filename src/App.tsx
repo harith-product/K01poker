@@ -95,7 +95,7 @@ export default function App() {
               [...(offlineSessions.length ? offlineSessions : onlineSessions)]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .slice(0, 10)
-                .map(s => Object.keys(s.players))
+                .map(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
             } />}
           </>
         )}
