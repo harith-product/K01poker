@@ -1,4 +1,5 @@
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { Player } from '../lib/types';
 
@@ -19,7 +20,93 @@ function fmt(value: number, sign = false): string {
   return value >= 0 ? `+${str}` : str;
 }
 
+function CalendarView({ player }: { player: Player }) {
+  const allDates = player.results.map(r => new Date(r.date));
+  const latest = allDates.length ? new Date(Math.max(...allDates.map(d => d.getTime()))) : new Date();
+  const [viewYear, setViewYear] = useState(latest.getFullYear());
+  const [viewMonth, setViewMonth] = useState(latest.getMonth());
+
+  // Map date string → amount for this player
+  const dayMap = new Map<string, number>();
+  player.results.forEach(r => {
+    const key = r.date.slice(0, 10);
+    dayMap.set(key, (dayMap.get(key) ?? 0) + r.amount);
+  });
+
+  // Compute color intensity based on max abs value in the month
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const monthAmounts = Array.from({ length: daysInMonth }, (_, i) => {
+    const key = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+    return dayMap.get(key) ?? null;
+  }).filter(v => v !== null) as number[];
+  const maxAbs = Math.max(...monthAmounts.map(Math.abs), 1);
+
+  function getColor(amount: number) {
+    const intensity = Math.min(Math.abs(amount) / maxAbs, 1);
+    if (amount > 0) {
+      // teal: light = #b2ebf2, dark = #006064
+      const r = Math.round(178 - intensity * 128);
+      const g = Math.round(235 - intensity * 139);
+      const b = Math.round(242 - intensity * 146);
+      return `rgb(${r},${g},${b})`;
+    } else {
+      // pink/red: light = #fce4ec, dark = #b71c1c
+      const r = Math.round(252 - intensity * 69);
+      const g = Math.round(228 - intensity * 180);
+      const b = Math.round(236 - intensity * 195);
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+
+  const prevMonth = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); } else setViewMonth(m => m - 1); };
+  const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); } else setViewMonth(m => m + 1); };
+
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay(); // 0=Sun
+  const startOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1; // Mon=0
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={prevMonth} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
+        </button>
+        <span className="text-sm font-bold text-gray-800">{monthName}</span>
+        <button onClick={nextMonth} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {days.map((d, i) => (
+          <div key={i} className="text-center text-xs text-gray-400 font-medium py-1">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: startOffset }).map((_, i) => <div key={`e-${i}`} />)}
+        {Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          const key = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const amount = dayMap.get(key) ?? null;
+          return (
+            <div key={day} className="aspect-square rounded-lg flex flex-col items-center justify-center"
+              style={{ backgroundColor: amount !== null ? getColor(amount) : 'transparent' }}>
+              <span className="text-xs font-semibold text-gray-700 leading-none">{day}</span>
+              {amount !== null && (
+                <span className="text-[9px] font-bold mt-0.5 leading-none text-gray-700">
+                  {amount >= 0 ? '+' : ''}{Math.abs(amount) >= 1000 ? `₹${(amount / 1000).toFixed(1)}K` : `₹${amount}`}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetProps) {
+  const [view, setView] = useState<'curve' | 'calendar'>('curve');
   if (!open || !player) return null;
 
   const isPositive = player.totalWinnings >= 0;
@@ -77,57 +164,48 @@ export function PlayerDetailSheet({ player, open, onClose }: PlayerDetailSheetPr
           ))}
         </div>
 
-        {/* Equity Curve */}
+        {/* Equity Curve / Calendar toggle */}
         <div className="bg-white rounded-3xl p-5 shadow-sm">
-          <h3 className="text-gray-900 text-base font-bold mb-4">Equity Curve</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-              <defs>
-                {/* Stroke gradient: green above zero, red below */}
-                <linearGradient id="strokeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset={zeroPct} stopColor="#16a34a" />
-                  <stop offset={zeroPct} stopColor="#dc2626" />
-                </linearGradient>
-                {/* Fill gradient: green tint above, red tint below */}
-                <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#16a34a" stopOpacity={0.15} />
-                  <stop offset={zeroPct} stopColor="#16a34a" stopOpacity={0.05} />
-                  <stop offset={zeroPct} stopColor="#dc2626" stopOpacity={0.05} />
-                  <stop offset="100%" stopColor="#dc2626" stopOpacity={0.15} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis
-                dataKey="index"
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                tickLine={false}
-                axisLine={false}
-                interval={Math.floor(chartData.length / 6)}
-              />
-              <YAxis
-                tickFormatter={formatK}
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                tickLine={false}
-                axisLine={false}
-                width={42}
-              />
-              <Tooltip
-                formatter={(value) => [Number(value).toLocaleString(), 'Cumulative']}
-                labelFormatter={(label) => `Game ${label}`}
-                contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
-              />
-              <ReferenceLine y={0} stroke="#000" strokeWidth={1.5} />
-              <Area
-                type="monotone"
-                dataKey="cumulative"
-                stroke="url(#strokeGrad)"
-                strokeWidth={2}
-                fill="url(#fillGrad)"
-                dot={false}
-                activeDot={{ r: 4, fill: '#16a34a' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-900 text-base font-bold">{view === 'curve' ? 'Equity Curve' : 'Calendar'}</h3>
+            <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+              <button onClick={() => setView('curve')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${view === 'curve' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}>
+                Curve
+              </button>
+              <button onClick={() => setView('calendar')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}>
+                Calendar
+              </button>
+            </div>
+          </div>
+
+          {view === 'curve' ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="strokeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset={zeroPct} stopColor="#16a34a" />
+                    <stop offset={zeroPct} stopColor="#dc2626" />
+                  </linearGradient>
+                  <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#16a34a" stopOpacity={0.15} />
+                    <stop offset={zeroPct} stopColor="#16a34a" stopOpacity={0.05} />
+                    <stop offset={zeroPct} stopColor="#dc2626" stopOpacity={0.05} />
+                    <stop offset="100%" stopColor="#dc2626" stopOpacity={0.15} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey="index" tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} interval={Math.floor(chartData.length / 6)} />
+                <YAxis tickFormatter={formatK} tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} width={42} />
+                <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Cumulative']} labelFormatter={(label) => `Game ${label}`} contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} />
+                <ReferenceLine y={0} stroke="#000" strokeWidth={1.5} />
+                <Area type="monotone" dataKey="cumulative" stroke="url(#strokeGrad)" strokeWidth={2} fill="url(#fillGrad)" dot={false} activeDot={{ r: 4, fill: '#16a34a' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <CalendarView player={player} />
+          )}
         </div>
 
         {/* Date wise results */}
