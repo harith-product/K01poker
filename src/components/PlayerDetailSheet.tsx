@@ -165,9 +165,9 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
       const url = `${window.location.origin}/player/${player.id}`;
       const text = `Hey, check out my poker performance using the link below\n${url}`;
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `${player.name}'s Poker Stats`, text });
+        await navigator.share({ files: [file], text });
       } else {
-        await navigator.share({ title: `${player.name}'s Poker Stats`, text });
+        await navigator.share({ text });
       }
     } catch {
       // user cancelled or not supported
