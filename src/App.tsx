@@ -56,12 +56,19 @@ function useAppData(): AppData {
 function PlayerPage({ data }: { data: AppData }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [mode] = useState<GameMode>('offline');
 
-  const players = mode === 'offline' ? data.offlinePlayers : data.onlinePlayers;
-  const player = players.find(p => p.id === id) ?? null;
+  // Search both offline and online players
+  const player = data.offlinePlayers.find(p => p.id === id)
+    ?? data.onlinePlayers.find(p => p.id === id)
+    ?? null;
+  const players = data.offlinePlayers.find(p => p.id === id)
+    ? data.offlinePlayers
+    : data.onlinePlayers;
 
-  if (data.loading) {
+  // Show spinner while data hasn't arrived yet (loading or no players fetched yet)
+  const stillLoading = data.loading || (data.offlinePlayers.length === 0 && data.onlinePlayers.length === 0);
+
+  if (stillLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 flex items-center justify-center">
         <div className="text-center text-gray-500">
