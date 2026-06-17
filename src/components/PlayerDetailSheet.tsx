@@ -199,6 +199,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                           <div className="w-2 h-2 rounded-full bg-teal-400" />
                           <span className="text-[10px] font-semibold text-gray-600">{wins}W</span>
                         </div>
+                        <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-semibold text-gray-600">{losses}L</span>
                           <div className="w-2 h-2 rounded-full bg-rose-500" />
@@ -340,6 +341,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                                 <div className="w-2 h-2 rounded-full bg-teal-400" />
                                 <span className="text-[10px] font-semibold text-gray-600">{wins}W</span>
                               </div>
+                              <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
                               <div className="flex items-center gap-1">
                                 <span className="text-[10px] font-semibold text-gray-600">{losses}L</span>
                                 <div className="w-2 h-2 rounded-full bg-rose-500" />
