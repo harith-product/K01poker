@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Flame, Moon, Zap, Home, ChevronDown, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Flame, Moon, Zap, Home, ChevronDown, Star, Percent } from 'lucide-react';
 import { useState } from 'react';
 import type { Player, GameSession } from '../lib/types';
 
@@ -68,6 +68,17 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
     .map(p => ({ player: p, avg: p.totalWinnings / p.gamesPlayed }))
     .filter(p => p.avg < 0)
     .sort((a, b) => a.avg - b.avg)
+    .slice(0, 5);
+
+  const topWinPct = [...fp]
+    .filter(p => p.gamesPlayed >= 5)
+    .map(p => {
+      const wins = p.results.filter(r => r.amount > 0).length;
+      const losses = p.results.filter(r => r.amount < 0).length;
+      const pct = Math.round((wins / p.gamesPlayed) * 100);
+      return { player: p, wins, losses, pct };
+    })
+    .sort((a, b) => b.pct - a.pct)
     .slice(0, 5);
 
   const categories = [
@@ -187,6 +198,42 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                   <span className="text-red-600 font-mono">{item.avg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/game</span>
                 </button>
                 {index < topAvgLosses.length - 1 && <div className="h-px bg-gray-100" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top Win % (5+ games) */}
+      {topWinPct.length > 0 && (
+        <div className="bg-white rounded-3xl p-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-md">
+              <Percent className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-gray-900 text-lg font-semibold">Top Win % <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+          </div>
+          <div className="space-y-0">
+            {topWinPct.map((item, index) => (
+              <div key={item.player.id}>
+                <button
+                  onClick={() => onPlayerClick(item.player.id)}
+                  className="w-full flex items-center gap-3 py-3 px-1 hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
+                  <div className="flex-1 text-left">
+                    <p className="text-gray-900">{item.player.name}</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="text-[10px] font-semibold text-green-600">{item.wins}W</span>
+                      <span className="text-[10px] text-gray-300">/</span>
+                      <span className="text-[10px] font-semibold text-red-500">{item.losses}L</span>
+                      <span className="text-[10px] text-gray-300 ml-1">·</span>
+                      <span className="text-[10px] text-gray-400">{item.player.gamesPlayed} games</span>
+                    </div>
+                  </div>
+                  <span className="text-teal-600 font-mono font-semibold">{item.pct}%</span>
+                </button>
+                {index < topWinPct.length - 1 && <div className="h-px bg-gray-100" />}
               </div>
             ))}
           </div>
