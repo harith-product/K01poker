@@ -107,7 +107,7 @@ function PlayerPage({ data }: { data: AppData }) {
 
 function MainApp({ data }: { data: AppData }) {
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [mode, setMode] = useState<GameMode>('offline');
+  const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'offline');
   const [period, setPeriod] = useState<TimePeriod>('overall');
   const [periodOpen, setPeriodOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -123,6 +123,7 @@ function MainApp({ data }: { data: AppData }) {
 
   const handleModeChange = (m: GameMode) => {
     setMode(m);
+    localStorage.setItem('gameMode', m);
     mainRef.current?.scrollTo({ top: 0 });
   };
 
