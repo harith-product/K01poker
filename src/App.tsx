@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Navigation, type TabType } from './components/Navigation';
-import { HomeTab } from './components/HomeTab';
+import { HomeTab, type TimePeriod } from './components/HomeTab';
 import { StatsTab } from './components/StatsTab';
 import { GamesTab } from './components/GamesTab';
 import { BalanceTab } from './components/BalanceTab';
@@ -15,6 +15,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [mode, setMode] = useState<GameMode>('offline');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [period, setPeriod] = useState<TimePeriod>('overall');
+  const [periodOpen, setPeriodOpen] = useState(false);
 
   const [onlinePlayers, setOnlinePlayers] = useState<Player[]>([]);
   const [onlineSessions, setOnlineSessions] = useState<GameSession[]>([]);
@@ -70,6 +72,30 @@ export default function App() {
                 <path d="M8 9l4-4 4 4M8 15l4 4 4-4" />
               </svg>
             </button>
+            {activeTab === 'home' && (
+              <div className="relative ml-auto">
+                <button
+                  onClick={() => setPeriodOpen(o => !o)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm border border-gray-100 text-sm font-medium text-gray-700"
+                >
+                  {period === 'overall' ? 'Overall' : period === '30days' ? 'Last 30 days' : 'Last 7 days'}
+                  <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+                {periodOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setPeriodOpen(false)} />
+                    <div className="absolute right-0 mt-1 bg-white rounded-xl shadow-lg z-20 min-w-[140px] overflow-hidden border border-gray-100">
+                      {(['overall', '30days', '7days'] as TimePeriod[]).map(p => (
+                        <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 ${period === p ? 'font-bold text-purple-600' : 'text-gray-700'}`}>
+                          {p === 'overall' ? 'Overall' : p === '30days' ? 'Last 30 days' : 'Last 7 days'}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -87,7 +113,7 @@ export default function App() {
         )}
         {!loading && !error && (
           <>
-            {activeTab === 'home' && <HomeTab players={players} onPlayerClick={setSelectedPlayerId} />}
+            {activeTab === 'home' && <HomeTab players={players} onPlayerClick={setSelectedPlayerId} period={period} />}
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'balance' && <BalanceTab balance={balance} />}

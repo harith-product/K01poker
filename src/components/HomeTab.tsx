@@ -1,5 +1,4 @@
-import { Trophy, Crown, Medal, Award, ChevronRight, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Trophy, Crown, Medal, Award, ChevronRight } from 'lucide-react';
 import type { Player } from '../lib/types';
 
 function formatWithSign(value: number): string {
@@ -7,12 +6,13 @@ function formatWithSign(value: number): string {
   return value >= 0 ? `+${str}` : str;
 }
 
+export type TimePeriod = 'overall' | '30days' | '7days';
+
 interface HomeTabProps {
   players: Player[];
   onPlayerClick: (playerId: string) => void;
+  period: TimePeriod;
 }
-
-type TimePeriod = 'overall' | '30days' | '7days';
 
 function filterByPeriod(players: Player[], period: TimePeriod): Player[] {
   const now = new Date();
@@ -34,15 +34,8 @@ function filterByPeriod(players: Player[], period: TimePeriod): Player[] {
     .sort((a, b) => b.totalWinnings - a.totalWinnings);
 }
 
-const labels: Record<TimePeriod, string> = {
-  overall: 'Overall',
-  '30days': 'Last 30 days',
-  '7days': 'Last 7 days',
-};
 
-export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
-  const [period, setPeriod] = useState<TimePeriod>('overall');
-  const [open, setOpen] = useState(false);
+export function HomeTab({ players, onPlayerClick, period }: HomeTabProps) {
 
   const sorted = filterByPeriod(players, period);
   const top3 = sorted.slice(0, 3);
@@ -58,31 +51,7 @@ export function HomeTab({ players, onPlayerClick }: HomeTabProps) {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-8 space-y-4">
-      <div className="flex items-center justify-end mb-4">
-        <div className="relative">
-          <button
-            onClick={() => setOpen(!open)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg shadow-sm text-sm"
-          >
-            <span className="text-gray-700 font-medium">{labels[period]}</span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          </button>
-          {open && (
-            <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg z-10 min-w-[140px]">
-              {(['overall', '30days', '7days'] as TimePeriod[]).map((p, i, arr) => (
-                <button
-                  key={p}
-                  onClick={() => { setPeriod(p); setOpen(false); }}
-                  className={`w-full text-left py-2 px-3 hover:bg-gray-100 text-sm text-gray-900 ${i === 0 ? 'rounded-t-lg' : ''} ${i === arr.length - 1 ? 'rounded-b-lg' : ''}`}
-                >
-                  {labels[p]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-8 space-y-4">
 
       {/* Podium - Top 3 */}
       {top3.length >= 3 && (
