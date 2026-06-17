@@ -295,18 +295,30 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                     {[
                       { p: player, color: '#8b5cf6', bg: 'bg-purple-50', border: 'border-purple-100' },
                       { p: comparePlayer, color: '#f97316', bg: 'bg-orange-50', border: 'border-orange-100' },
-                    ].map(({ p, color, bg, border }) => (
-                      <div key={p.id} className={`${bg} border ${border} rounded-2xl px-3 py-2.5`}>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                          <span className="text-xs text-gray-500 font-medium">{p.name}</span>
+                    ].map(({ p, color, bg, border }) => {
+                      const wins = p.results.filter(r => r.amount > 0).length;
+                      const losses = p.results.filter(r => r.amount < 0).length;
+                      const winPct = p.gamesPlayed > 0 ? Math.round((wins / p.gamesPlayed) * 100) : 0;
+                      return (
+                        <div key={p.id} className={`${bg} border ${border} rounded-2xl px-3 py-2.5`}>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                            <span className="text-xs text-gray-500 font-medium">{p.name}</span>
+                          </div>
+                          <p className={`text-base font-bold font-mono ${p.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            {p.totalWinnings >= 0 ? '+' : ''}{p.totalWinnings.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">{p.gamesPlayed} games</p>
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <span className="text-[10px] font-semibold text-green-600">{wins}W</span>
+                            <span className="text-[10px] text-gray-300">/</span>
+                            <span className="text-[10px] font-semibold text-red-500">{losses}L</span>
+                            <span className="text-[10px] text-gray-300 ml-1">·</span>
+                            <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
+                          </div>
                         </div>
-                        <p className={`text-base font-bold font-mono ${p.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                          {p.totalWinnings >= 0 ? '+' : ''}{p.totalWinnings.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-400">{p.gamesPlayed} games</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={compareData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
