@@ -7,6 +7,8 @@ import { SessionDetails } from './admin/SessionDetails';
 import { ManageMembers } from './admin/ManageMembers';
 import { PastSessions } from './admin/PastSessions';
 import { PastSessionDetails } from './admin/PastSessionDetails';
+import { getMembers } from '../lib/adminData';
+import type { Member } from '../lib/adminData';
 
 export type AdminScreen =
   | 'login' | 'home' | 'createSession' | 'sessionDetails'
@@ -16,6 +18,7 @@ export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [screen, setScreen] = useState<AdminScreen>('login');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [prefetchedMembers, setPrefetchedMembers] = useState<Member[]>([]);
 
   useEffect(() => {
     const data = localStorage.getItem('adminSession');
@@ -28,6 +31,8 @@ export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers
         localStorage.removeItem('adminSession');
       }
     }
+    // Prefetch members immediately so CreateSession loads instantly
+    getMembers().then(setPrefetchedMembers);
   }, []);
 
   function handleLogin() {
@@ -53,7 +58,7 @@ export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers
     <>
       {screen === 'home' && <AdminHome onNavigate={navigateTo} onLogout={handleLogout} />}
       {screen === 'createSession' && (
-        <CreateSession onBack={() => navigateTo('home')} onSessionCreated={id => navigateTo('sessionDetails', id)} recentSessionsPlayers={recentSessionsPlayers} />
+        <CreateSession onBack={() => navigateTo('home')} onSessionCreated={id => navigateTo('sessionDetails', id)} recentSessionsPlayers={recentSessionsPlayers} prefetchedMembers={prefetchedMembers} />
       )}
       {screen === 'sessionDetails' && selectedSessionId && (
         <SessionDetails sessionId={selectedSessionId} onBack={() => navigateTo('home')} />

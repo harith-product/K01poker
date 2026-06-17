@@ -9,11 +9,12 @@ interface CreateSessionProps {
   onBack: () => void;
   onSessionCreated: (sessionId: string) => void;
   recentSessionsPlayers?: string[][];
+  prefetchedMembers?: Member[];
 }
 
 type RatioType = '1:1' | '1:2' | '1:4' | 'custom';
 
-export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers = [] }: CreateSessionProps) {
+export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers = [], prefetchedMembers = [] }: CreateSessionProps) {
   const [buyInAmount, setBuyInAmount] = useState('500');
   const [ratioType, setRatioType] = useState<RatioType>('1:4');
   const [customCash, setCustomCash] = useState('');
@@ -25,9 +26,7 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
   const { message, toast } = useToast();
 
   useEffect(() => {
-    getMembers().then(allMembers => {
-      // Build a priority map: most recent session = priority 0, next = 1, etc.
-      // Members not in any recent session get priority = recentSessionsPlayers.length
+    function sortMembers(allMembers: Member[]) {
       const priorityMap = new Map<string, number>();
       recentSessionsPlayers.forEach((players, i) => {
         players.forEach(name => {
@@ -35,14 +34,18 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
           if (!priorityMap.has(key)) priorityMap.set(key, i);
         });
       });
-      const sorted = [...allMembers].sort((a, b) => {
+      return [...allMembers].sort((a, b) => {
         const aPriority = priorityMap.get(a.name.toLowerCase()) ?? recentSessionsPlayers.length;
         const bPriority = priorityMap.get(b.name.toLowerCase()) ?? recentSessionsPlayers.length;
         return aPriority - bPriority;
       });
-      setOrderedMembers(sorted);
-    });
-  }, [recentSessionsPlayers]);
+    }
+    if (prefetchedMembers.length > 0) {
+      setOrderedMembers(sortMembers(prefetchedMembers));
+    } else {
+      getMembers().then(allMembers => setOrderedMembers(sortMembers(allMembers)));
+    }
+  }, [recentSessionsPlayers, prefetchedMembers]);
 
   function toggle(id: string) {
     setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
