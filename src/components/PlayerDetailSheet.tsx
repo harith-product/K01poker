@@ -127,17 +127,25 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
   const range = maxVal - minVal || 1;
   const zeroPct = `${((maxVal / range) * 100).toFixed(1)}%`;
 
-  // Compare chart: normalize both players to same game-count axis (by game index)
+  // Compare chart: date-based axis, carry-forward last cumulative for missing dates
   const compareData = (() => {
     if (!comparePlayer) return [];
-    const len = Math.max(player.results.length, comparePlayer.results.length);
-    return Array.from({ length: len }, (_, i) => ({
-      index: i + 1,
-      [player.name]: i < player.results.length
-        ? player.results.slice(0, i + 1).reduce((s, x) => s + x.amount, 0) : null,
-      [comparePlayer.name]: i < comparePlayer.results.length
-        ? comparePlayer.results.slice(0, i + 1).reduce((s, x) => s + x.amount, 0) : null,
-    }));
+    const allDates = Array.from(new Set([
+      ...player.results.map(r => r.date),
+      ...comparePlayer.results.map(r => r.date),
+    ])).sort();
+
+    let cumA = 0, cumB = 0;
+    const aByDate = new Map<string, number>();
+    const bByDate = new Map<string, number>();
+    player.results.forEach(r => aByDate.set(r.date, (aByDate.get(r.date) ?? 0) + r.amount));
+    comparePlayer.results.forEach(r => bByDate.set(r.date, (bByDate.get(r.date) ?? 0) + r.amount));
+
+    return allDates.map(date => {
+      if (aByDate.has(date)) cumA += aByDate.get(date)!;
+      if (bByDate.has(date)) cumB += bByDate.get(date)!;
+      return { date: date.slice(5), [player.name]: cumA, [comparePlayer.name]: cumB };
+    });
   })();
 
   const otherPlayers = allPlayers.filter(p => p.id !== player.id);
@@ -231,24 +239,26 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
         <div className="bg-white rounded-3xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-gray-900 text-base font-bold">Compare</h3>
-            {!showCompare && (
+            {showCompare ? (
+              <button onClick={() => { setShowCompare(false); setComparePlayer(null); setCompareSearch(''); }}
+                className="text-xs text-gray-400 font-semibold">Close</button>
+            ) : (
               <button onClick={() => setShowCompare(true)}
-                className="px-3 py-1.5 bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold rounded-xl">
+                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-xl text-xs font-semibold text-gray-600">
                 + Compare
               </button>
             )}
           </div>
 
-          {showCompare && (
+          {showCompare ? (
             <>
+              {/* Player chips row */}
               <div className="flex items-center gap-2 mb-4">
-                {/* Player 1 chip */}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 rounded-xl">
-                  <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                  <span className="text-xs font-bold text-purple-700">{player.name}</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 rounded-xl border border-purple-100">
+                  <div className="w-2 h-2 rounded-full bg-purple-500" />
+                  <span className="text-sm font-bold text-gray-900">{player.name}</span>
                 </div>
-                <span className="text-gray-400 text-xs">vs</span>
-                {/* Player 2 picker */}
+                <span className="text-xs text-gray-400 font-medium">vs</span>
                 <div className="relative flex-1">
                   <input
                     type="text"
@@ -256,15 +266,15 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
                     value={showCompareDropdown ? compareSearch : (comparePlayer?.name ?? '')}
                     onFocus={() => { setShowCompareDropdown(true); setCompareSearch(''); }}
                     onChange={e => { setCompareSearch(e.target.value); setComparePlayer(null); }}
-                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 text-sm font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
                   />
                   {showCompareDropdown && (
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setShowCompareDropdown(false)} />
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-xl z-20 overflow-hidden border border-gray-100 max-h-48 overflow-y-auto">
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-xl z-20 overflow-hidden border border-gray-100 max-h-44 overflow-y-auto">
                         {otherPlayers.filter(p => p.name.toLowerCase().includes(compareSearch.toLowerCase())).map(p => (
                           <button key={p.id} onClick={() => { setComparePlayer(p); setShowCompareDropdown(false); setCompareSearch(''); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-900 hover:bg-purple-50 border-b border-gray-50 last:border-0">
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-gray-900 hover:bg-purple-50 border-b border-gray-50 last:border-0">
                             {p.name}
                           </button>
                         ))}
@@ -272,35 +282,52 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
                     </>
                   )}
                 </div>
-                <button onClick={() => { setShowCompare(false); setComparePlayer(null); }} className="text-gray-400 text-xs font-bold">✕</button>
               </div>
 
-              {comparePlayer && (
+              {comparePlayer ? (
                 <>
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-purple-500" /><span className="text-xs text-gray-500">{player.name}: <span className={`font-bold ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>{player.totalWinnings >= 0 ? '+' : ''}{player.totalWinnings.toLocaleString()}</span></span></div>
-                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-orange-400" /><span className="text-xs text-gray-500">{comparePlayer.name}: <span className={`font-bold ${comparePlayer.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>{comparePlayer.totalWinnings >= 0 ? '+' : ''}{comparePlayer.totalWinnings.toLocaleString()}</span></span></div>
+                  {/* Legend */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { p: player, color: '#8b5cf6', bg: 'bg-purple-50', border: 'border-purple-100' },
+                      { p: comparePlayer, color: '#f97316', bg: 'bg-orange-50', border: 'border-orange-100' },
+                    ].map(({ p, color, bg, border }) => (
+                      <div key={p.id} className={`${bg} border ${border} rounded-2xl px-3 py-2.5`}>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                          <span className="text-xs text-gray-500 font-medium">{p.name}</span>
+                        </div>
+                        <p className={`text-base font-bold font-mono ${p.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {p.totalWinnings >= 0 ? '+' : ''}{p.totalWinnings.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-400">{p.gamesPlayed} games</p>
+                      </div>
+                    ))}
                   </div>
                   <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={compareData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis dataKey="index" tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} interval={Math.floor(compareData.length / 6)} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} interval={Math.floor(compareData.length / 5)} />
                       <YAxis tickFormatter={formatK} tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} width={42} />
-                      <Tooltip formatter={(value, name) => [Number(value).toLocaleString(), name]} labelFormatter={(l) => `Game ${l}`} contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} />
-                      <ReferenceLine y={0} stroke="#000" strokeWidth={1} />
-                      <Line type="monotone" dataKey={player.name} stroke="#8b5cf6" strokeWidth={2} dot={false} connectNulls />
-                      <Line type="monotone" dataKey={comparePlayer.name} stroke="#f97316" strokeWidth={2} dot={false} connectNulls />
+                      <Tooltip
+                        formatter={(value, name) => [Number(value).toLocaleString(), name]}
+                        labelFormatter={(l) => l}
+                        contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                      />
+                      <ReferenceLine y={0} stroke="#000" strokeWidth={1.5} />
+                      <Line type="monotone" dataKey={player.name} stroke="#8b5cf6" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey={comparePlayer.name} stroke="#f97316" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </>
-              )}
-              {!comparePlayer && (
-                <p className="text-center text-sm text-gray-400 py-6">Search for a player to compare</p>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-gray-400">Search for a player above to compare curves</p>
+                </div>
               )}
             </>
-          )}
-          {!showCompare && (
-            <p className="text-sm text-gray-400">Compare your equity curve with another player.</p>
+          ) : (
+            <p className="text-sm text-gray-400">Overlay your equity curve with any other player.</p>
           )}
         </div>
 
