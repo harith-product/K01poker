@@ -8,6 +8,7 @@ interface PlayerDetailSheetProps {
   allPlayers?: Player[];
   open: boolean;
   onClose: () => void;
+  fullPage?: boolean;
 }
 
 function formatK(value: number) {
@@ -105,7 +106,7 @@ function CalendarView({ player }: { player: Player }) {
   );
 }
 
-export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: PlayerDetailSheetProps) {
+export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, fullPage = false }: PlayerDetailSheetProps) {
   const [view, setView] = useState<'curve' | 'calendar'>('curve');
   const [compareSearch, setCompareSearch] = useState('');
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
@@ -158,16 +159,16 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
   ];
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-t-3xl h-[90vh] overflow-auto w-full">
+    <div className={`bg-gradient-to-br from-purple-50 to-pink-50 w-full ${fullPage ? 'min-h-screen' : 'rounded-t-3xl h-[90vh] overflow-auto'}`}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200 px-6 py-4">
         <button
           onClick={onClose}
-          className="absolute top-4 right-6 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+          className={`absolute top-4 ${fullPage ? 'left-4' : 'right-6'} w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50`}
         >
-          <X className="w-5 h-5 text-gray-600" />
+          {fullPage ? <ChevronLeft className="w-5 h-5 text-gray-600" /> : <X className="w-5 h-5 text-gray-600" />}
         </button>
-        <div className="flex items-start gap-4 pt-2">
+        <div className={`flex items-start gap-4 ${fullPage ? 'pt-2 pl-12' : 'pt-2'}`}>
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
             {player.name.charAt(0).toUpperCase()}
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import { Navigation, type TabType } from './components/Navigation';
 import { HomeTab, type TimePeriod } from './components/HomeTab';
 import { StatsTab } from './components/StatsTab';
@@ -11,13 +12,17 @@ import type { Player, GameSession, BalanceData } from './lib/types';
 
 export type GameMode = 'online' | 'offline';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [mode, setMode] = useState<GameMode>('offline');
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [period, setPeriod] = useState<TimePeriod>('overall');
-  const [periodOpen, setPeriodOpen] = useState(false);
+interface AppData {
+  onlinePlayers: Player[];
+  onlineSessions: GameSession[];
+  offlinePlayers: Player[];
+  offlineSessions: GameSession[];
+  balance: BalanceData;
+  loading: boolean;
+  error: string | null;
+}
 
+function useAppData(): AppData {
   const [onlinePlayers, setOnlinePlayers] = useState<Player[]>([]);
   const [onlineSessions, setOnlineSessions] = useState<GameSession[]>([]);
   const [offlinePlayers, setOfflinePlayers] = useState<Player[]>([]);
@@ -25,7 +30,6 @@ export default function App() {
   const [balance, setBalance] = useState<BalanceData>({ owesHouse: [], houseOwes: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     Promise.all([fetchSheetData(), fetchOfflineSheetData(), fetchBalanceData()])
@@ -40,26 +44,82 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const players = mode === 'online' ? onlinePlayers : offlinePlayers;
-  const sessions = mode === 'online' ? onlineSessions : offlineSessions;
-  const selectedPlayer = players.find(p => p.id === selectedPlayerId) ?? null;
+  return { onlinePlayers, onlineSessions, offlinePlayers, offlineSessions, balance, loading, error };
+}
+
+function PlayerPage({ data }: { data: AppData }) {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [mode] = useState<GameMode>('offline');
+
+  const players = mode === 'offline' ? data.offlinePlayers : data.onlinePlayers;
+  const player = players.find(p => p.id === id) ?? null;
+
+  if (data.loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 flex items-center justify-center">
+        <div className="text-center text-gray-500">
+          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!player) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Player not found</p>
+          <button onClick={() => navigate('/')} className="text-purple-600 font-semibold">← Back</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
+      <div className="max-w-lg mx-auto">
+        <PlayerDetailSheet
+          player={player}
+          allPlayers={players}
+          open={true}
+          onClose={() => navigate(-1)}
+          fullPage
+        />
+      </div>
+    </div>
+  );
+}
+
+function MainApp({ data }: { data: AppData }) {
+  const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [mode, setMode] = useState<GameMode>('offline');
+  const [period, setPeriod] = useState<TimePeriod>('overall');
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
+
+  const players = mode === 'online' ? data.onlinePlayers : data.offlinePlayers;
+  const sessions = mode === 'online' ? data.onlineSessions : data.offlineSessions;
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    setSelectedPlayerId(null);
     mainRef.current?.scrollTo({ top: 0 });
   };
 
   const handleModeChange = (m: GameMode) => {
     setMode(m);
-    setSelectedPlayerId(null);
     mainRef.current?.scrollTo({ top: 0 });
+  };
+
+  const handlePlayerClick = (playerId: string) => {
+    navigate(`/player/${playerId}`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
       <main ref={mainRef} className="pb-24 min-h-screen overflow-y-auto" style={{ height: '100vh' }}>
-        {/* Persistent header with title + mode switcher */}
         <div className="px-4 pt-5 pb-2">
           <div className="max-w-lg mx-auto flex items-center gap-2">
             <h1 className="text-gray-900 text-2xl font-bold">K01 Poker</h1>
@@ -99,26 +159,26 @@ export default function App() {
           </div>
         </div>
 
-        {loading && (
+        {data.loading && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-500">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p>Loading leaderboard…</p>
           </div>
         )}
-        {error && (
+        {data.error && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center">
             <p className="text-red-500 mb-2">Failed to load data</p>
-            <p className="text-gray-500 text-sm">{error}</p>
+            <p className="text-gray-500 text-sm">{data.error}</p>
           </div>
         )}
-        {!loading && !error && (
+        {!data.loading && !data.error && (
           <>
-            {activeTab === 'home' && <HomeTab players={players} onPlayerClick={setSelectedPlayerId} period={period} />}
-            {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={setSelectedPlayerId} />}
-            {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={setSelectedPlayerId} />}
-            {activeTab === 'balance' && <BalanceTab balance={balance} />}
+            {activeTab === 'home' && <HomeTab players={players} onPlayerClick={handlePlayerClick} period={period} />}
+            {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} />}
+            {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={handlePlayerClick} />}
+            {activeTab === 'balance' && <BalanceTab balance={data.balance} />}
             {activeTab === 'admin' && <AdminTab recentSessionsPlayers={
-              [...(offlineSessions.length ? offlineSessions : onlineSessions)]
+              [...(data.offlineSessions.length ? data.offlineSessions : data.onlineSessions)]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .slice(0, 10)
                 .map(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
@@ -128,23 +188,17 @@ export default function App() {
       </main>
 
       <Navigation activeTab={activeTab} setActiveTab={handleTabChange} />
-
-      {selectedPlayerId && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setSelectedPlayerId(null)}
-          />
-          <div className="relative w-full max-w-lg mx-auto">
-            <PlayerDetailSheet
-              player={selectedPlayer}
-              allPlayers={players}
-              open={!!selectedPlayerId}
-              onClose={() => setSelectedPlayerId(null)}
-            />
-          </div>
-        </div>
-      )}
     </div>
+  );
+}
+
+export default function App() {
+  const data = useAppData();
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainApp data={data} />} />
+      <Route path="/player/:id" element={<PlayerPage data={data} />} />
+    </Routes>
   );
 }
