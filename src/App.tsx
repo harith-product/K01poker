@@ -4,6 +4,7 @@ import { HomeTab } from './components/HomeTab';
 import { StatsTab } from './components/StatsTab';
 import { GamesTab } from './components/GamesTab';
 import { BalanceTab } from './components/BalanceTab';
+import { AdminTab } from './components/AdminTab';
 import { PlayerDetailSheet } from './components/PlayerDetailSheet';
 import { fetchSheetData, fetchOfflineSheetData, fetchBalanceData } from './lib/googleSheets';
 import type { Player, GameSession, BalanceData } from './lib/types';
@@ -57,7 +58,7 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
       <main ref={mainRef} className="pb-24 min-h-screen overflow-y-auto" style={{ height: '100vh' }}>
         {/* Persistent header with title + mode switcher */}
-        <div className="sticky top-0 z-30 bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 px-4 pt-5 pb-2">
+        <div className="px-4 pt-5 pb-2">
           <div className="max-w-lg mx-auto flex items-center gap-2">
             <h1 className="text-gray-900 text-2xl font-bold">K01 Poker</h1>
             <button
@@ -90,6 +91,7 @@ export default function App() {
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'balance' && <BalanceTab balance={balance} />}
+            {activeTab === 'admin' && <AdminTab />}
           </>
         )}
       </main>

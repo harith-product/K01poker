@@ -1,0 +1,73 @@
+import { useState, useEffect } from 'react';
+import { AdminLogin } from './admin/AdminLogin';
+import { AdminHome } from './admin/AdminHome';
+import { CreateSession } from './admin/CreateSession';
+import { CurrentSession } from './admin/CurrentSession';
+import { SessionDetails } from './admin/SessionDetails';
+import { ManageMembers } from './admin/ManageMembers';
+import { PastSessions } from './admin/PastSessions';
+import { PastSessionDetails } from './admin/PastSessionDetails';
+
+export type AdminScreen =
+  | 'login' | 'home' | 'createSession' | 'sessionDetails'
+  | 'currentSession' | 'manageMembers' | 'pastSessions' | 'pastSessionDetails';
+
+export function AdminTab() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [screen, setScreen] = useState<AdminScreen>('login');
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem('adminSession');
+    if (data) {
+      const { timestamp } = JSON.parse(data);
+      if (Date.now() - timestamp < 60 * 60 * 1000) {
+        setIsLoggedIn(true);
+        setScreen('home');
+      } else {
+        localStorage.removeItem('adminSession');
+      }
+    }
+  }, []);
+
+  function handleLogin() {
+    localStorage.setItem('adminSession', JSON.stringify({ timestamp: Date.now() }));
+    setIsLoggedIn(true);
+    setScreen('home');
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('adminSession');
+    setIsLoggedIn(false);
+    setScreen('login');
+  }
+
+  function navigateTo(s: AdminScreen, sessionId?: string) {
+    setScreen(s);
+    if (sessionId) setSelectedSessionId(sessionId);
+  }
+
+  if (!isLoggedIn) return <AdminLogin onLoginSuccess={handleLogin} />;
+
+  return (
+    <>
+      {screen === 'home' && <AdminHome onNavigate={navigateTo} onLogout={handleLogout} />}
+      {screen === 'createSession' && (
+        <CreateSession onBack={() => navigateTo('home')} onSessionCreated={id => navigateTo('sessionDetails', id)} />
+      )}
+      {screen === 'sessionDetails' && selectedSessionId && (
+        <SessionDetails sessionId={selectedSessionId} onBack={() => navigateTo('home')} />
+      )}
+      {screen === 'currentSession' && (
+        <CurrentSession onBack={() => navigateTo('home')} onOpenSession={id => navigateTo('sessionDetails', id)} onNavigate={navigateTo} />
+      )}
+      {screen === 'manageMembers' && <ManageMembers onBack={() => navigateTo('home')} />}
+      {screen === 'pastSessions' && (
+        <PastSessions onBack={() => navigateTo('home')} onSelectSession={id => navigateTo('pastSessionDetails', id)} />
+      )}
+      {screen === 'pastSessionDetails' && selectedSessionId && (
+        <PastSessionDetails sessionId={selectedSessionId} onBack={() => navigateTo('pastSessions')} />
+      )}
+    </>
+  );
+}
