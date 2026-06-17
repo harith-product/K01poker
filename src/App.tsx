@@ -138,6 +138,7 @@ export default function App() {
           <div className="relative w-full max-w-lg mx-auto">
             <PlayerDetailSheet
               player={selectedPlayer}
+              allPlayers={players}
               open={!!selectedPlayerId}
               onClose={() => setSelectedPlayerId(null)}
             />
