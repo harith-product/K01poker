@@ -236,22 +236,26 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
         </div>
 
         {/* Compare */}
+        {!showCompare ? (
+          <button
+            onClick={() => setShowCompare(true)}
+            className="w-full rounded-3xl overflow-hidden shadow-sm relative"
+            style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f9a8d4 100%)' }}
+          >
+            <div className="px-6 py-5 flex items-center justify-between">
+              <span className="text-white text-base font-semibold">Compare with a player</span>
+              <ChevronRight className="w-5 h-5 text-white/80" />
+            </div>
+          </button>
+        ) : (
         <div className="bg-white rounded-3xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-gray-900 text-base font-bold">Compare</h3>
-            {showCompare ? (
-              <button onClick={() => { setShowCompare(false); setComparePlayer(null); setCompareSearch(''); }}
-                className="text-xs text-gray-400 font-semibold">Close</button>
-            ) : (
-              <button onClick={() => setShowCompare(true)}
-                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-xl text-xs font-semibold text-gray-600">
-                + Compare
-              </button>
-            )}
+            <button onClick={() => { setShowCompare(false); setComparePlayer(null); setCompareSearch(''); }}
+              className="text-xs text-gray-400 font-semibold">Close</button>
           </div>
 
-          {showCompare ? (
-            <>
+          <>
               {/* Player chips row */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 rounded-xl border border-purple-100">
@@ -325,11 +329,9 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose }: Pl
                   <p className="text-sm text-gray-400">Search for a player above to compare curves</p>
                 </div>
               )}
-            </>
-          ) : (
-            <p className="text-sm text-gray-400">Overlay your equity curve with any other player.</p>
-          )}
+          </>
         </div>
+        )}
 
         {/* Date wise results */}
         <div className="bg-white rounded-3xl p-5 shadow-sm">
