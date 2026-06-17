@@ -3,7 +3,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import {
   getSessions, getMembers,
   addBuyIn, removeBuyIn, endMemberSession, resumeMemberSession,
-  endSessionForAll, addMemberToSession, fmtDate,
+  endSessionForAll, addMemberToSession, cancelSession, fmtDate,
 } from '../../lib/adminData';
 import type { Session, Member } from '../../lib/adminData';
 import { useToast } from '../../lib/useToast';
@@ -14,7 +14,7 @@ interface SessionDetailsProps {
   onBack: () => void;
 }
 
-type BottomSheet = 'none' | 'endMember' | 'endAll';
+type BottomSheet = 'none' | 'endMember' | 'endAll' | 'cancelGame';
 
 export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
   const [session, setSession] = useState<Session | null>(null);
@@ -118,7 +118,10 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
             <p className="text-sm text-gray-500">{fmtDate(session.date)}</p>
           </div>
           {session.isActive && (
-            <button onClick={() => setSheet('endAll')} className="ml-auto px-4 py-2 bg-red-500 text-white font-semibold rounded-xl text-sm">End All</button>
+            <div className="ml-auto flex items-center gap-2">
+              <button onClick={() => setSheet('cancelGame')} className="px-4 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm">Cancel</button>
+              <button onClick={() => setSheet('endAll')} className="px-4 py-2 bg-green-500 text-white font-semibold rounded-xl text-sm">Cashout</button>
+            </div>
           )}
         </div>
         <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-2xl text-sm">
@@ -237,10 +240,29 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                       );
                     })}
                   </div>
-                  <button onClick={handleEndAll} className="w-full py-4 bg-red-500 text-white text-lg font-bold rounded-2xl">End Session</button>
+                  <button onClick={handleEndAll} className="w-full py-4 bg-green-500 text-white text-lg font-bold rounded-2xl">Cashout</button>
                 </>
               );
             })()}
+            {sheet === 'cancelGame' && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">Cancel Game?</h2>
+                  <button onClick={() => setSheet('none')} className="text-gray-500 text-sm font-bold">Back</button>
+                </div>
+                <p className="text-gray-500 mb-8">This will permanently delete the session and all buy-in data. This cannot be undone.</p>
+                <button
+                  onClick={async () => {
+                    await cancelSession(sessionId);
+                    toast('Session cancelled');
+                    setTimeout(onBack, 600);
+                  }}
+                  className="w-full py-4 bg-red-500 text-white text-lg font-bold rounded-2xl"
+                >
+                  Yes, Cancel Game
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -108,5 +108,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'unknown action' });
   }
 
+  if (req.method === 'DELETE') {
+    const id = req.query.id as string;
+    if (!id) return res.status(400).json({ error: 'missing id' });
+    await sql`DELETE FROM session_members WHERE session_id = ${id}`;
+    await sql`DELETE FROM sessions WHERE id = ${id}`;
+    return res.status(200).json({ ok: true });
+  }
+
   return res.status(405).json({ error: 'method not allowed' });
 }

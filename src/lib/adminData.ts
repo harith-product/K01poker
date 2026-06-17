@@ -107,6 +107,10 @@ export async function addMemberToSession(sessionId: string, memberId: string): P
   await sessionAction(sessionId, 'addMember', { memberId });
 }
 
+export async function cancelSession(sessionId: string): Promise<void> {
+  await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
+}
+
 export function fmtDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
