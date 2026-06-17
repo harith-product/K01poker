@@ -201,9 +201,9 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
               <div className="h-px bg-gray-100 mx-5" />
               <div className="px-5 py-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-green-600">{wins}W</span>
+                  <span className="text-sm font-semibold text-gray-700">{wins}W</span>
                   <span className="text-xs font-semibold text-gray-500">{winPct}% win</span>
-                  <span className="text-sm font-semibold text-red-600">{losses}L</span>
+                  <span className="text-sm font-semibold text-gray-700">{losses}L</span>
                 </div>
                 <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
                   <div className="bg-teal-400 rounded-full" style={{ width: `${winPct}%` }} />

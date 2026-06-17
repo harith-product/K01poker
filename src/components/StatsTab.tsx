@@ -227,10 +227,10 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-teal-400" />
-                          <span className="text-[10px] font-semibold text-green-600">{item.wins}W</span>
+                          <span className="text-[10px] font-semibold text-gray-700">{item.wins}W</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-semibold text-red-600">{item.losses}L</span>
+                          <span className="text-[10px] font-semibold text-gray-700">{item.losses}L</span>
                           <div className="w-2 h-2 rounded-full bg-rose-500" />
                         </div>
                       </div>
