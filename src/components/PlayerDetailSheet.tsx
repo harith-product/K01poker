@@ -41,20 +41,18 @@ function CalendarView({ player }: { player: Player }) {
   }).filter(v => v !== null) as number[];
   const maxAbs = Math.max(...monthAmounts.map(Math.abs), 1);
 
-  function getColor(amount: number) {
+  function getStyle(amount: number): { bg: string; text: string } {
     const intensity = Math.min(Math.abs(amount) / maxAbs, 1);
     if (amount > 0) {
-      // teal: light = #b2ebf2, dark = #006064
       const r = Math.round(178 - intensity * 128);
       const g = Math.round(235 - intensity * 139);
       const b = Math.round(242 - intensity * 146);
-      return `rgb(${r},${g},${b})`;
+      return { bg: `rgb(${r},${g},${b})`, text: intensity > 0.5 ? '#ffffff' : '#1f2937' };
     } else {
-      // pink/red: light = #fce4ec, dark = #b71c1c
-      const r = Math.round(252 - intensity * 69);
-      const g = Math.round(228 - intensity * 180);
-      const b = Math.round(236 - intensity * 195);
-      return `rgb(${r},${g},${b})`;
+      const r = Math.round(252 - intensity * 100);
+      const g = Math.round(228 - intensity * 190);
+      const b = Math.round(236 - intensity * 200);
+      return { bg: `rgb(${r},${g},${b})`, text: intensity > 0.5 ? '#ffffff' : '#1f2937' };
     }
   }
 
@@ -88,13 +86,14 @@ function CalendarView({ player }: { player: Player }) {
           const day = i + 1;
           const key = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const amount = dayMap.get(key) ?? null;
+          const style = amount !== null ? getStyle(amount) : null;
           return (
             <div key={day} className="aspect-square rounded-lg flex flex-col items-center justify-center"
-              style={{ backgroundColor: amount !== null ? getColor(amount) : 'transparent' }}>
-              <span className="text-xs font-semibold text-gray-700 leading-none">{day}</span>
+              style={{ backgroundColor: style?.bg ?? 'transparent' }}>
+              <span className="text-xs font-semibold leading-none" style={{ color: style?.text ?? '#6b7280' }}>{day}</span>
               {amount !== null && (
-                <span className="text-[9px] font-bold mt-0.5 leading-none text-gray-700">
-                  {amount >= 0 ? '+' : ''}{Math.abs(amount) >= 1000 ? `₹${(amount / 1000).toFixed(1)}K` : `₹${amount}`}
+                <span className="text-[9px] font-bold mt-0.5 leading-none" style={{ color: style!.text }}>
+                  {amount >= 0 ? '+' : ''}₹{Math.abs(amount) >= 1000 ? `${(amount / 1000).toFixed(1)}K` : amount}
                 </span>
               )}
             </div>
