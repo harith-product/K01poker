@@ -149,11 +149,13 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-24 pt-3 bg-gradient-to-t from-white via-white to-transparent max-w-lg mx-auto">
-        <button onClick={handleCreate} disabled={creating}
-          className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-60">
-          {creating ? 'Creating…' : 'Create Session'}
-        </button>
+      <div className="fixed bottom-0 left-0 right-0 z-40 pb-20 pt-3 px-4" style={{ background: 'linear-gradient(to top, white 70%, transparent)' }}>
+        <div className="max-w-lg mx-auto">
+          <button onClick={handleCreate} disabled={creating}
+            className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-60">
+            {creating ? 'Creating…' : 'Create Session'}
+          </button>
+        </div>
       </div>
     </div>
   );
