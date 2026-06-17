@@ -182,14 +182,30 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
 
       <div className="px-6 py-6 space-y-4">
         {/* Summary stats */}
-        <div className="grid grid-cols-2 gap-3">
-          {stats.map(({ label, value, color }) => (
-            <div key={label} className="bg-white rounded-2xl px-4 py-3 shadow-sm">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`font-mono font-semibold text-base ${color}`}>{value}</p>
+        {(() => {
+          const wins = player.results.filter(r => r.amount > 0).length;
+          const losses = player.results.filter(r => r.amount < 0).length;
+          const winPct = player.gamesPlayed > 0 ? Math.round((wins / player.gamesPlayed) * 100) : 0;
+          return (
+            <div className="grid grid-cols-2 gap-3">
+              {stats.map(({ label, value, color }) => (
+                <div key={label} className="bg-white rounded-2xl px-4 py-3 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-1">{label}</p>
+                  <p className={`font-mono font-semibold text-base ${color}`}>{value}</p>
+                  {label === 'Games Played' && (
+                    <div className="flex items-center gap-1 mt-1.5">
+                      <span className="text-[10px] font-semibold text-green-600">{wins}W</span>
+                      <span className="text-[10px] text-gray-300">/</span>
+                      <span className="text-[10px] font-semibold text-red-500">{losses}L</span>
+                      <span className="text-[10px] text-gray-300 ml-1">·</span>
+                      <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          );
+        })()}
 
         {/* Equity Curve / Calendar toggle */}
         <div className="bg-white rounded-3xl p-5 shadow-sm">
