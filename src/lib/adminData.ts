@@ -108,7 +108,7 @@ export async function addMemberToSession(sessionId: string, memberId: string): P
 }
 
 export async function cancelSession(sessionId: string): Promise<void> {
-  await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
+  await sessionAction(sessionId, 'cancel');
 }
 
 export function fmtDate(dateStr: string): string {
