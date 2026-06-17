@@ -96,15 +96,14 @@ async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string)
   return { players, sessions };
 }
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const BACKGROUND_REFRESH_TTL = 10 * 60 * 1000; // refresh in background after 10 min
 
-function readCache<T>(key: string): T | null {
+function readCache<T>(key: string): { data: T; stale: boolean } | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) return null;
-    return data as T;
+    return { data: data as T, stale: Date.now() - ts > BACKGROUND_REFRESH_TTL };
   } catch { return null; }
 }
 
@@ -117,9 +116,9 @@ type SheetResult = { players: Player[]; sessions: GameSession[] };
 async function fetchWithCache(key: string, fetcher: () => Promise<SheetResult>): Promise<SheetResult> {
   const cached = readCache<SheetResult>(key);
   if (cached) {
-    // Refresh in background
-    fetcher().then(fresh => writeCache(key, fresh)).catch(() => {});
-    return cached;
+    // Always serve cache instantly; refresh in background only if stale
+    if (cached.stale) fetcher().then(fresh => writeCache(key, fresh)).catch(() => {});
+    return cached.data;
   }
   const fresh = await fetcher();
   writeCache(key, fresh);
@@ -173,8 +172,8 @@ async function fetchBalanceRaw(): Promise<BalanceData> {
 export async function fetchBalanceData(): Promise<BalanceData> {
   const cached = readCache<BalanceData>('cache_balance');
   if (cached) {
-    fetchBalanceRaw().then(fresh => writeCache('cache_balance', fresh)).catch(() => {});
-    return cached;
+    if (cached.stale) fetchBalanceRaw().then(fresh => writeCache('cache_balance', fresh)).catch(() => {});
+    return cached.data;
   }
   const fresh = await fetchBalanceRaw();
   writeCache('cache_balance', fresh);
