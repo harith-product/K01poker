@@ -1,5 +1,6 @@
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { Player } from '../lib/types';
 
@@ -112,6 +113,8 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [showCompareDropdown, setShowCompareDropdown] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   if (!open || !player) return null;
 
@@ -151,6 +154,29 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
 
   const otherPlayers = allPlayers.filter(p => p.id !== player.id);
 
+  async function handleShare() {
+    if (!shareCardRef.current || !player) return;
+    setSharing(true);
+    try {
+      const canvas = await html2canvas(shareCardRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f3ff' });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `${player.name}-poker.png`, { type: 'image/png' });
+        const url = `${window.location.origin}/player/${player.id}`;
+        const text = `Hey, check out my poker performance using the link below\n${url}`;
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], text });
+        } else {
+          await navigator.share({ text, url });
+        }
+      }, 'image/png');
+    } catch {
+      // user cancelled or not supported
+    } finally {
+      setSharing(false);
+    }
+  }
+
   const stats = [
     { label: 'Games Played', value: String(player.gamesPlayed), color: 'text-gray-900' },
     { label: 'Avg per Game', value: fmt(player.avgPerGame, true), color: player.avgPerGame >= 0 ? 'text-green-600' : 'text-red-600' },
@@ -168,7 +194,19 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
         >
           {fullPage ? <ChevronLeft className="w-5 h-5 text-gray-600" /> : <X className="w-5 h-5 text-gray-600" />}
         </button>
-        <div className={`flex items-start gap-4 ${fullPage ? 'pt-2 pl-12' : 'pt-2'}`}>
+        {fullPage && (
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
+          >
+            {sharing
+              ? <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              : <Share2 className="w-5 h-5 text-gray-600" />
+            }
+          </button>
+        )}
+        <div className={`flex items-start gap-4 ${fullPage ? 'pt-2 pl-12 pr-12' : 'pt-2'}`}>
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
             {player.name.charAt(0).toUpperCase()}
           </div>
@@ -355,6 +393,65 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Hidden share card — captured by html2canvas */}
+      <div
+        ref={shareCardRef}
+        style={{ position: 'fixed', left: '-9999px', top: 0, width: 360, background: '#f5f3ff', padding: 24, borderRadius: 20, fontFamily: 'system-ui, sans-serif' }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+            {player.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>{player.name}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: isPositive ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>
+              {fmt(player.totalWinnings, true)}
+            </div>
+          </div>
+          <div style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: '#7c3aed', letterSpacing: 1 }}>K01 POKER</div>
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+          {[
+            { label: 'Games', value: String(player.gamesPlayed), color: '#111827' },
+            { label: 'Avg / Game', value: fmt(player.avgPerGame, true), color: player.avgPerGame >= 0 ? '#16a34a' : '#dc2626' },
+            { label: 'Best Game', value: fmt(player.bestResult, true), color: '#16a34a' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ background: '#fff', borderRadius: 14, padding: '10px 12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 3 }}>{label}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color, fontFamily: 'monospace' }}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mini equity curve */}
+        <div style={{ background: '#fff', borderRadius: 14, padding: '12px 12px 8px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 6 }}>Equity Curve</div>
+          <ResponsiveContainer width="100%" height={140}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="shareStrokeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset={zeroPct} stopColor="#16a34a" />
+                  <stop offset={zeroPct} stopColor="#dc2626" />
+                </linearGradient>
+                <linearGradient id="shareFillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#16a34a" stopOpacity={0.15} />
+                  <stop offset={zeroPct} stopColor="#16a34a" stopOpacity={0.05} />
+                  <stop offset={zeroPct} stopColor="#dc2626" stopOpacity={0.05} />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity={0.15} />
+                </linearGradient>
+              </defs>
+              <XAxis hide />
+              <YAxis hide />
+              <ReferenceLine y={0} stroke="#d1d5db" strokeWidth={1} />
+              <Area type="monotone" dataKey="cumulative" stroke="url(#shareStrokeGrad)" strokeWidth={2} fill="url(#shareFillGrad)" dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

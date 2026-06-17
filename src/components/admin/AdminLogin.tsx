@@ -29,6 +29,15 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     next[index] = value;
     setOtp(next);
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
+    if (value && index === 5) {
+      if (next.join('') === ADMIN_OTP) {
+        onLoginSuccess();
+      } else {
+        setOtpError('Incorrect OTP. Try again.');
+        setOtp(['', '', '', '', '', '']);
+        setTimeout(() => otpRefs.current[0]?.focus(), 50);
+      }
+    }
   }
 
   function handleOtpKeyDown(index: number, e: React.KeyboardEvent) {
