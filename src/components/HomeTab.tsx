@@ -1,20 +1,21 @@
 import { Trophy, Crown, Medal, Award, ChevronRight } from 'lucide-react';
-import type { Player } from '../lib/types';
+import type { Player, GameSession } from '../lib/types';
 
 function formatWithSign(value: number): string {
   const str = value.toLocaleString();
   return value >= 0 ? `+${str}` : str;
 }
 
-export type TimePeriod = 'overall' | '30days' | '7days';
+export type TimePeriod = 'overall' | '30days' | '7days' | 'all';
 
 interface HomeTabProps {
   players: Player[];
+  sessions: GameSession[];
   onPlayerClick: (playerId: string) => void;
   period: TimePeriod;
 }
 
-function filterByPeriod(players: Player[], period: TimePeriod): Player[] {
+function filterByPeriod(players: Player[], sessions: GameSession[], period: TimePeriod): Player[] {
   const now = new Date();
   const cutoff =
     period === '7days'
@@ -22,6 +23,14 @@ function filterByPeriod(players: Player[], period: TimePeriod): Player[] {
       : period === '30days'
       ? new Date(now.getTime() - 30 * 86400000)
       : null;
+
+  // For all periods except 'all', hide players inactive in last 60 games with <20 total games
+  const last60Sessions = [...sessions]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 60);
+  const activeInLast60 = new Set(
+    last60Sessions.flatMap(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
+  );
 
   return players
     .map(p => {
@@ -31,13 +40,18 @@ function filterByPeriod(players: Player[], period: TimePeriod): Player[] {
       const totalWinnings = results.reduce((s, r) => s + r.amount, 0);
       return { ...p, results, totalWinnings, gamesPlayed: results.length };
     })
+    .filter(p => {
+      if (period === 'all') return true;
+      const isInactive = !activeInLast60.has(p.name) && p.gamesPlayed < 20;
+      return !isInactive;
+    })
     .sort((a, b) => b.totalWinnings - a.totalWinnings);
 }
 
 
-export function HomeTab({ players, onPlayerClick, period }: HomeTabProps) {
+export function HomeTab({ players, sessions, onPlayerClick, period }: HomeTabProps) {
 
-  const sorted = filterByPeriod(players, period);
+  const sorted = filterByPeriod(players, sessions, period);
   const top3 = sorted.slice(0, 3);
   const rest = sorted.slice(3);
 

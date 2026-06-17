@@ -138,17 +138,17 @@ function MainApp({ data }: { data: AppData }) {
                   onClick={() => setPeriodOpen(o => !o)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm border border-gray-100 text-sm font-medium text-gray-700"
                 >
-                  {period === 'overall' ? 'Overall' : period === '30days' ? 'Last 30 days' : 'Last 7 days'}
+                  {period === 'overall' ? 'Overall' : period === '30days' ? 'Last 30 days' : period === '7days' ? 'Last 7 days' : 'All players'}
                   <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
                 {periodOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setPeriodOpen(false)} />
-                    <div className="absolute right-0 mt-1 bg-white rounded-xl shadow-lg z-20 min-w-[140px] overflow-hidden border border-gray-100">
-                      {(['overall', '30days', '7days'] as TimePeriod[]).map(p => (
+                    <div className="absolute right-0 mt-1 bg-white rounded-xl shadow-lg z-20 min-w-[170px] overflow-hidden border border-gray-100">
+                      {(['overall', '30days', '7days', 'all'] as TimePeriod[]).map(p => (
                         <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
                           className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 ${period === p ? 'font-bold text-purple-600' : 'text-gray-700'}`}>
-                          {p === 'overall' ? 'Overall' : p === '30days' ? 'Last 30 days' : 'Last 7 days'}
+                          {p === 'overall' ? 'Overall' : p === '30days' ? 'Last 30 days' : p === '7days' ? 'Last 7 days' : 'Add inactive players'}
                         </button>
                       ))}
                     </div>
@@ -173,7 +173,7 @@ function MainApp({ data }: { data: AppData }) {
         )}
         {!data.loading && !data.error && (
           <>
-            {activeTab === 'home' && <HomeTab players={players} onPlayerClick={handlePlayerClick} period={period} />}
+            {activeTab === 'home' && <HomeTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} period={period} />}
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'balance' && <BalanceTab balance={data.balance} />}
