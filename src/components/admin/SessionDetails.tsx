@@ -93,7 +93,7 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
     <div className="max-w-lg mx-auto px-4 pt-6">
       <div className="bg-white rounded-3xl p-6 shadow-sm">
         <p className="text-gray-600">Session not found</p>
-        <button onClick={onBack} className="mt-4 text-purple-600 font-medium">Go Back</button>
+        <button onClick={onBack} className="mt-4 text-violet-600 font-medium">Go Back</button>
       </div>
     </div>
   );
@@ -155,7 +155,7 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                     </div>
                   )}
                   {done && session.isActive && (
-                    <button onClick={async () => { await resumeMemberSession(sessionId, sm.memberId); load(); }} className="text-xs text-purple-600 font-medium">Resume</button>
+                    <button onClick={async () => { await resumeMemberSession(sessionId, sm.memberId); load(); }} className="text-xs text-violet-600 font-medium">Resume</button>
                   )}
                 </div>
               </div>
@@ -172,7 +172,7 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                 <input type="text" placeholder="Search member..." value={showMemberList ? memberSearch : (selectedName || '')}
                   onFocus={() => { setShowMemberList(true); setMemberSearch(''); }}
                   onChange={e => { setMemberSearch(e.target.value); setNewMemberId(''); }}
-                  className="w-full px-4 py-3.5 bg-white rounded-2xl border border-gray-200 outline-none focus:border-purple-400 text-lg font-bold text-gray-900 placeholder:font-normal placeholder:text-gray-400" />
+                  className="w-full px-4 py-3.5 bg-white rounded-2xl border border-gray-200 outline-none focus:border-violet-400 text-lg font-bold text-gray-900 placeholder:font-normal placeholder:text-gray-400" />
                 {showMemberList && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMemberList(false)} />
@@ -180,14 +180,14 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                       {filtered.length === 0 ? <p className="px-4 py-3 text-gray-400 text-sm">No members found</p>
                         : filtered.map(m => (
                           <button key={m.id} onClick={() => { setNewMemberId(m.id); setShowMemberList(false); setMemberSearch(''); }}
-                            className="w-full text-left px-4 py-3.5 text-lg font-bold text-gray-900 hover:bg-purple-50 border-b border-gray-50 last:border-0 transition-colors">{m.name}</button>
+                            className="w-full text-left px-4 py-3.5 text-lg font-bold text-gray-900 hover:bg-violet-50 border-b border-gray-50 last:border-0 transition-colors">{m.name}</button>
                         ))}
                     </div>
                   </>
                 )}
               </div>
               <button onClick={() => { handleAddMember(); setMemberSearch(''); }} disabled={!newMemberId}
-                className="w-full mt-3 py-3.5 bg-gradient-to-br from-purple-500 to-pink-500 text-white text-base font-bold rounded-2xl disabled:opacity-40">Add to Session</button>
+                className="w-full mt-3 py-3.5 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-base font-bold rounded-2xl disabled:opacity-40">Add to Session</button>
             </div>
           );
         })()}
@@ -205,7 +205,7 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                 <div className="flex items-center justify-between py-3 border-b border-gray-100 mb-6">
                   <span className="text-xl font-bold text-gray-900">{selectedMemberId && getMemberById(selectedMemberId)?.name}</span>
                   <input type="number" inputMode="numeric" placeholder="0" value={chipsLeft} onChange={e => setChipsLeft(e.target.value)} autoFocus
-                    className="w-28 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 outline-none focus:border-purple-400 text-xl font-bold text-gray-900 text-center" />
+                    className="w-28 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 outline-none focus:border-violet-400 text-xl font-bold text-gray-900 text-center" />
                 </div>
                 <button onClick={handleEndMember} className="w-full py-4 bg-red-500 text-white text-lg font-bold rounded-2xl">Confirm & End</button>
               </>
@@ -235,7 +235,7 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
                           <span className="text-xl font-bold text-gray-900 flex-1">{member.name}</span>
                           <input ref={i === 0 ? firstInputRef : null} type="number" inputMode="numeric" placeholder="0"
                             value={allChips[sm.memberId] || ''} onChange={e => setAllChips(prev => ({ ...prev, [sm.memberId]: e.target.value }))}
-                            className="w-28 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 outline-none focus:border-purple-400 text-xl font-bold text-gray-900 text-center" />
+                            className="w-28 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-200 outline-none focus:border-violet-400 text-xl font-bold text-gray-900 text-center" />
                         </div>
                       );
                     })}

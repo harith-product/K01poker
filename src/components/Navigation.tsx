@@ -27,8 +27,8 @@ export function Navigation({ activeTab, setActiveTab }: NavigationProps) {
               onClick={() => setActiveTab(id)}
               className="flex-1 flex flex-col items-center py-3 gap-1 transition-all"
             >
-              <Icon className={`w-5 h-5 ${active ? 'text-purple-600' : 'text-gray-400'}`} />
-              <span className={`text-xs ${active ? 'text-purple-600 font-medium' : 'text-gray-400'}`}>
+              <Icon className={`w-5 h-5 ${active ? 'text-violet-600' : 'text-gray-400'}`} />
+              <span className={`text-xs ${active ? 'text-violet-600 font-medium' : 'text-gray-400'}`}>
                 {label}
               </span>
             </button>

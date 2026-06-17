@@ -56,17 +56,17 @@ export function AdminHome({ onNavigate, onLogout, refreshKey }: AdminHomeProps) 
                 <p className="text-sm text-gray-400">No session running right now</p>
               </div>
             </div>
-            <button onClick={() => onNavigate('createSession')} className="mt-3 text-sm text-purple-600 font-medium">
+            <button onClick={() => onNavigate('createSession')} className="mt-3 text-sm text-violet-600 font-medium">
               Create a session →
             </button>
           </div>
         )}
 
         {activeSession && (
-          <button onClick={() => onNavigate('createSession')} className="w-full p-4 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-2xl transition-all text-left">
+          <button onClick={() => onNavigate('createSession')} className="w-full p-4 bg-gradient-to-br from-violet-50 to-fuchsia-50 hover:from-violet-200 hover:to-fuchsia-100 rounded-2xl transition-all text-left">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -79,10 +79,10 @@ export function AdminHome({ onNavigate, onLogout, refreshKey }: AdminHomeProps) 
           </button>
         )}
 
-        <button onClick={() => onNavigate('manageMembers')} className="w-full p-4 bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 rounded-2xl transition-all text-left">
+        <button onClick={() => onNavigate('manageMembers')} className="w-full p-4 bg-gradient-to-br from-blue-50 to-fuchsia-50 hover:from-blue-100 hover:to-fuchsia-100 rounded-2xl transition-all text-left">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-fuchsia-500 flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>

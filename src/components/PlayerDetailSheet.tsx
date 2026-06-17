@@ -166,7 +166,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
   ];
 
   return (
-    <div className={`bg-gradient-to-br from-purple-50 to-pink-50 w-full ${fullPage ? 'min-h-screen' : 'rounded-t-3xl h-[90vh] overflow-auto'}`}>
+    <div className={`bg-gradient-to-br from-violet-50 to-fuchsia-50 w-full ${fullPage ? 'min-h-screen' : 'rounded-t-3xl h-[90vh] overflow-auto'}`}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200 px-6 py-4">
         <button
@@ -176,7 +176,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
           {fullPage ? <ChevronLeft className="w-5 h-5 text-gray-600" /> : <X className="w-5 h-5 text-gray-600" />}
         </button>
         <div className={`flex items-start gap-4 ${fullPage ? 'pt-2 pl-12' : 'pt-2'}`}>
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
             {player.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
@@ -289,8 +289,8 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
           <>
               {/* Player chips row */}
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 rounded-xl border border-purple-100">
-                  <div className="w-2 h-2 rounded-full bg-purple-500" />
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 rounded-xl border border-violet-100">
+                  <div className="w-2 h-2 rounded-full bg-violet-500" />
                   <span className="text-sm font-bold text-gray-900">{player.name}</span>
                 </div>
                 <span className="text-xs text-gray-400 font-medium">vs</span>
@@ -307,7 +307,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                       setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
                     }}
                     onChange={e => { setCompareSearch(e.target.value); setComparePlayer(null); }}
-                    className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 font-bold text-gray-900 outline-none focus:border-violet-400 placeholder:font-normal placeholder:text-gray-400"
                     style={{ fontSize: 16 }}
                   />
                   {showCompareDropdown && (
@@ -316,7 +316,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                       <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-xl z-20 overflow-hidden border border-gray-100 max-h-44 overflow-y-auto">
                         {otherPlayers.filter(p => p.name.toLowerCase().includes(compareSearch.toLowerCase())).map(p => (
                           <button key={p.id} onClick={() => { setComparePlayer(p); setShowCompareDropdown(false); setCompareSearch(''); }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-gray-900 hover:bg-purple-50 border-b border-gray-50 last:border-0">
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-gray-900 hover:bg-violet-50 border-b border-gray-50 last:border-0">
                             {p.name}
                           </button>
                         ))}
@@ -331,7 +331,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                   {/* Legend */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {[
-                      { p: player, color: '#8b5cf6', bg: 'bg-purple-50', border: 'border-purple-100' },
+                      { p: player, color: '#8b5cf6', bg: 'bg-violet-50', border: 'border-violet-100' },
                       { p: comparePlayer, color: '#f97316', bg: 'bg-orange-50', border: 'border-orange-100' },
                     ].map(({ p, color, bg, border }) => {
                       const wins = p.results.filter(r => r.amount > 0).length;

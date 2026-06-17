@@ -70,9 +70,9 @@ function PlayerPage({ data }: { data: AppData }) {
 
   if (stillLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-200 via-white to-fuchsia-100 flex items-center justify-center">
         <div className="text-center text-gray-500">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p>Loading…</p>
         </div>
       </div>
@@ -81,17 +81,17 @@ function PlayerPage({ data }: { data: AppData }) {
 
   if (!player) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-200 via-white to-fuchsia-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Player not found</p>
-          <button onClick={() => navigate('/')} className="text-purple-600 font-semibold">← Back</button>
+          <button onClick={() => navigate('/')} className="text-violet-600 font-semibold">← Back</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-violet-200 via-white to-fuchsia-100">
       <div className="max-w-lg mx-auto">
         <PlayerDetailSheet
           player={player}
@@ -142,7 +142,7 @@ function MainApp({ data }: { data: AppData }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-violet-200 via-white to-fuchsia-100">
       <main ref={mainRef} className="pb-24 min-h-screen overflow-y-auto" style={{ height: '100vh' }}>
         <div className="px-4 pt-5 pb-2">
           <div className="max-w-lg mx-auto flex items-center gap-2">
@@ -171,7 +171,7 @@ function MainApp({ data }: { data: AppData }) {
                     <div className="absolute right-0 mt-1 bg-white rounded-xl shadow-lg z-20 min-w-[170px] overflow-hidden border border-gray-100">
                       {(['overall', '30days', '7days', 'all'] as TimePeriod[]).map(p => (
                         <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 ${period === p ? 'font-bold text-purple-600' : 'text-gray-700'}`}>
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 ${period === p ? 'font-bold text-violet-600' : 'text-gray-700'}`}>
                           {p === 'overall' ? 'Overall' : p === '30days' ? 'Last 30 days' : p === '7days' ? 'Last 7 days' : 'Add inactive players'}
                         </button>
                       ))}
@@ -185,7 +185,7 @@ function MainApp({ data }: { data: AppData }) {
 
         {data.loading && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-500">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p>Loading leaderboard…</p>
           </div>
         )}

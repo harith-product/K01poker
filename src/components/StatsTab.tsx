@@ -85,8 +85,8 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
     { label: 'Biggest Wins', data: biggestWin, Icon: TrendingUp, color: 'from-green-400 to-emerald-500', valueColor: 'text-green-700', fmt: (v: number) => `${v.toLocaleString()}` },
     { label: 'Biggest Losses', data: biggestLoss, Icon: TrendingDown, color: 'from-red-400 to-rose-500', valueColor: 'text-red-700', fmt: (v: number) => `${v.toLocaleString()}` },
     { label: 'Win Streaks', data: winStreak, Icon: Flame, color: 'from-orange-400 to-red-500', valueColor: 'text-green-700', fmt: (v: number) => `${v} games` },
-    { label: 'Losing Streaks', data: loseStreak, Icon: Moon, color: 'from-indigo-400 to-purple-500', valueColor: 'text-red-700', fmt: (v: number) => `${v} games` },
-    { label: 'Most Games Played', data: mostGames, Icon: Zap, color: 'from-purple-400 to-pink-500', valueColor: 'text-gray-900', fmt: (v: number) => `${v} games` },
+    { label: 'Losing Streaks', data: loseStreak, Icon: Moon, color: 'from-indigo-400 to-fuchsia-500', valueColor: 'text-red-700', fmt: (v: number) => `${v} games` },
+    { label: 'Most Games Played', data: mostGames, Icon: Zap, color: 'from-violet-400 to-fuchsia-500', valueColor: 'text-gray-900', fmt: (v: number) => `${v} games` },
   ];
 
   // House stats
@@ -208,7 +208,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
       {topWinPct.length > 0 && (
         <div className="bg-white rounded-3xl p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-fuchsia-500 flex items-center justify-center shadow-md">
               <Percent className="w-5 h-5 text-white" />
             </div>
             <h3 className="text-gray-900 text-lg font-semibold">Top Win % <span className="text-sm font-normal text-gray-400">(30+ games)</span></h3>

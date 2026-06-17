@@ -36,7 +36,7 @@ export function CurrentSession({ onBack, onOpenSession, onNavigate }: CurrentSes
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🃏</div>
           <p className="text-gray-600 mb-6">No session running right now</p>
-          <button onClick={() => onNavigate('createSession')} className="px-6 py-3 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-2xl">
+          <button onClick={() => onNavigate('createSession')} className="px-6 py-3 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-2xl">
             Create a session
           </button>
         </div>
@@ -71,7 +71,7 @@ export function CurrentSession({ onBack, onOpenSession, onNavigate }: CurrentSes
               <p className="text-2xl font-mono text-gray-900">{totalBuyIns}</p>
             </div>
           </div>
-          <button onClick={() => onOpenSession(activeSession.id)} className="w-full py-3 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-xl">
+          <button onClick={() => onOpenSession(activeSession.id)} className="w-full py-3 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-xl">
             Open Session
           </button>
         </div>

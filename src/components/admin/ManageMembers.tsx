@@ -51,7 +51,7 @@ export function ManageMembers({ onBack }: ManageMembersProps) {
           <h1 className="text-gray-900 text-2xl font-bold">Manage Members</h1>
         </div>
         <button onClick={() => { setNewName(''); setSheet('add'); }}
-          className="w-full py-3 mb-6 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-2xl flex items-center justify-center gap-2">
+          className="w-full py-3 mb-6 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-2xl flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Add Member
         </button>
         <div className="space-y-2">
@@ -79,10 +79,10 @@ export function ManageMembers({ onBack }: ManageMembersProps) {
                 <label className="block text-sm text-gray-700 mb-2">Member name</label>
                 <input autoFocus type="text" placeholder="Enter name" value={newName}
                   onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-purple-400 mb-6" />
+                  className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-violet-400 mb-6" />
                 <div className="flex gap-3">
                   <button onClick={() => setSheet('none')} className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-700 font-medium">Cancel</button>
-                  <button onClick={handleAdd} className="flex-1 py-3 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-xl">Add</button>
+                  <button onClick={handleAdd} className="flex-1 py-3 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-xl">Add</button>
                 </div>
               </>
             )}
@@ -93,10 +93,10 @@ export function ManageMembers({ onBack }: ManageMembersProps) {
                 <label className="block text-sm text-gray-700 mb-2">Member name</label>
                 <input autoFocus type="text" placeholder="Enter name" value={editingName}
                   onChange={e => setEditingName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEdit()}
-                  className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-purple-400 mb-6" />
+                  className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-violet-400 mb-6" />
                 <div className="flex gap-3">
                   <button onClick={() => setSheet('none')} className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-700 font-medium">Cancel</button>
-                  <button onClick={handleEdit} className="flex-1 py-3 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-xl">Confirm</button>
+                  <button onClick={handleEdit} className="flex-1 py-3 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-xl">Confirm</button>
                 </div>
               </>
             )}

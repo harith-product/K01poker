@@ -73,7 +73,7 @@ export function PastSessionDetails({ sessionId, onBack }: PastSessionDetailsProp
     <div className="max-w-lg mx-auto px-4 pt-6">
       <div className="bg-white rounded-3xl p-6 shadow-sm">
         <p className="text-gray-600">Session not found</p>
-        <button onClick={onBack} className="mt-4 text-purple-600 font-medium">Go Back</button>
+        <button onClick={onBack} className="mt-4 text-violet-600 font-medium">Go Back</button>
       </div>
     </div>
   );
@@ -115,13 +115,13 @@ export function PastSessionDetails({ sessionId, onBack }: PastSessionDetailsProp
                     <p className="text-xs text-gray-400 mb-1">Buy-ins</p>
                     <input type="number" value={edited[sm.memberId]?.buyIns || '1'}
                       onChange={e => update(sm.memberId, 'buyIns', e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-purple-400 font-bold text-gray-900" />
+                      className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-violet-400 font-bold text-gray-900" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Chips left</p>
                     <input type="number" value={edited[sm.memberId]?.chipsLeft || '0'}
                       onChange={e => update(sm.memberId, 'chipsLeft', e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-purple-400 font-bold text-gray-900" />
+                      className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-violet-400 font-bold text-gray-900" />
                   </div>
                 </div>
               </div>
@@ -129,7 +129,7 @@ export function PastSessionDetails({ sessionId, onBack }: PastSessionDetailsProp
           })}
         </div>
         <button onClick={handleSave} disabled={saving}
-          className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-2xl disabled:opacity-60">
+          className="w-full py-4 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold rounded-2xl disabled:opacity-60">
           {saving ? 'Saving…' : 'Save changes'}
         </button>
       </div>

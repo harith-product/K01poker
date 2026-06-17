@@ -52,7 +52,7 @@ export function GamesTab({ sessions, players, onPlayerClick }: GamesTabProps) {
                 onClick={() => setSelectedDate(date)}
                 className={`flex-shrink-0 px-4 py-3 rounded-2xl transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md'
+                    ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-md'
                     : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >

@@ -62,7 +62,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         <button onClick={() => setStep('phone')} className="self-start flex items-center gap-1 text-gray-500 text-sm mb-8">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mb-6 shadow-lg">
           <Shield className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Enter OTP</h1>
@@ -80,7 +80,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 value={digit}
                 onChange={e => handleOtpChange(i, e.target.value)}
                 onKeyDown={e => handleOtpKeyDown(i, e)}
-                className="w-12 h-14 text-center text-xl font-bold text-gray-900 bg-white rounded-2xl border-2 border-gray-100 outline-none focus:border-purple-400 shadow-sm transition-all"
+                className="w-12 h-14 text-center text-xl font-bold text-gray-900 bg-white rounded-2xl border-2 border-gray-100 outline-none focus:border-violet-400 shadow-sm transition-all"
                 autoFocus={i === 0}
               />
             ))}
@@ -89,7 +89,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <button
             onClick={handleOtpSubmit}
             disabled={otp.join('').length !== 6}
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-2xl shadow-md disabled:opacity-50"
+            className="w-full py-4 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white font-semibold rounded-2xl shadow-md disabled:opacity-50"
           >
             Verify & Enter
           </button>
@@ -100,7 +100,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
   return (
     <div className="max-w-lg mx-auto px-6 pt-16 pb-8 flex flex-col items-center">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mb-6 shadow-lg">
         <Shield className="w-8 h-8 text-white" />
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Admin Access</h1>
@@ -127,7 +127,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         <button
           onClick={handlePhoneSubmit}
           disabled={phone.length < 10}
-          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-2xl shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full py-4 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white font-semibold rounded-2xl shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
         >
           Continue <ChevronRight className="w-5 h-5" />
         </button>

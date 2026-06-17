@@ -106,7 +106,7 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Buy-in Amount</p>
             <input type="number" placeholder="500" value={buyInAmount} onChange={e => setBuyInAmount(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 outline-none focus:border-purple-400 text-xl font-bold text-gray-900" />
+              className="w-full px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 outline-none focus:border-violet-400 text-xl font-bold text-gray-900" />
           </div>
 
           <div>
@@ -114,7 +114,7 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
             <div className="grid grid-cols-4 gap-2">
               {(['1:1', '1:2', '1:4', 'custom'] as RatioType[]).map(r => (
                 <button key={r} onClick={() => setRatioType(r)}
-                  className={`py-2.5 px-3 rounded-xl font-bold transition-all ${ratioType === r ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  className={`py-2.5 px-3 rounded-xl font-bold transition-all ${ratioType === r ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
                   {r === 'custom' ? 'Custom' : r}
                 </button>
               ))}
@@ -124,12 +124,12 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Cash</p>
                   <input type="number" placeholder="10" value={customCash} onChange={e => setCustomCash(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-purple-400 font-bold text-gray-900" />
+                    className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-violet-400 font-bold text-gray-900" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Chips</p>
                   <input type="number" placeholder="30" value={customChips} onChange={e => setCustomChips(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-purple-400 font-bold text-gray-900" />
+                    className="w-full px-3 py-2.5 bg-white rounded-xl border border-gray-200 outline-none focus:border-violet-400 font-bold text-gray-900" />
                 </div>
               </div>
             )}
@@ -138,11 +138,11 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
           <div className="flex flex-col flex-1">
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Select Members</p>
             <input type="text" placeholder="Search members..." value={memberSearch} onChange={e => setMemberSearch(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 outline-none focus:border-purple-400 text-base text-gray-900 mb-3" />
+              className="w-full px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 outline-none focus:border-violet-400 text-base text-gray-900 mb-3" />
             <div className="space-y-2 overflow-y-auto flex-1">
               {orderedMembers.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase())).map(m => (
                 <label key={m.id} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer">
-                  <input type="checkbox" checked={selected.includes(m.id)} onChange={() => toggle(m.id)} className="w-4 h-4 accent-purple-500" />
+                  <input type="checkbox" checked={selected.includes(m.id)} onChange={() => toggle(m.id)} className="w-4 h-4 accent-violet-500" />
                   <span className="text-gray-900 font-bold text-base">{m.name}</span>
                 </label>
               ))}
@@ -155,7 +155,7 @@ export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers 
       <div className="fixed bottom-0 left-0 right-0 z-40 pb-20 pt-3 px-4" style={{ background: 'linear-gradient(to top, white 70%, transparent)' }}>
         <div className="max-w-lg mx-auto">
           <button onClick={handleCreate} disabled={creating}
-            className="w-full py-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-60">
+            className="w-full py-4 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-60">
             {creating ? 'Creating…' : 'Create Session'}
           </button>
         </div>
