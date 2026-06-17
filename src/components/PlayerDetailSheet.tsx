@@ -299,7 +299,13 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                     type="text"
                     placeholder="Search player…"
                     value={showCompareDropdown ? compareSearch : (comparePlayer?.name ?? '')}
-                    onFocus={() => { setShowCompareDropdown(true); setCompareSearch(''); }}
+                    onFocus={e => {
+                      setShowCompareDropdown(true);
+                      setCompareSearch('');
+                      // Wait for keyboard to appear, then scroll input into view
+                      const el = e.currentTarget;
+                      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
+                    }}
                     onChange={e => { setCompareSearch(e.target.value); setComparePlayer(null); }}
                     className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 text-sm font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
                   />
