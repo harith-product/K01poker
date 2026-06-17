@@ -116,6 +116,15 @@ function MainApp({ data }: { data: AppData }) {
   const players = mode === 'online' ? data.onlinePlayers : data.offlinePlayers;
   const sessions = mode === 'online' ? data.onlineSessions : data.offlineSessions;
 
+  // Restore scroll position when returning from player page
+  useEffect(() => {
+    const saved = sessionStorage.getItem('mainScrollTop');
+    if (saved && mainRef.current) {
+      mainRef.current.scrollTop = parseInt(saved);
+      sessionStorage.removeItem('mainScrollTop');
+    }
+  }, []);
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     mainRef.current?.scrollTo({ top: 0 });
@@ -128,6 +137,7 @@ function MainApp({ data }: { data: AppData }) {
   };
 
   const handlePlayerClick = (playerId: string) => {
+    if (mainRef.current) sessionStorage.setItem('mainScrollTop', String(mainRef.current.scrollTop));
     navigate(`/player/${playerId}`);
   };
 
