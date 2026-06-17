@@ -71,7 +71,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
     .slice(0, 5);
 
   const topWinPct = [...fp]
-    .filter(p => p.gamesPlayed >= 5)
+    .filter(p => p.gamesPlayed >= 30)
     .map(p => {
       const wins = p.results.filter(r => r.amount > 0).length;
       const losses = p.results.filter(r => r.amount < 0).length;
@@ -211,7 +211,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-md">
               <Percent className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-gray-900 text-lg font-semibold">Top Win % <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+            <h3 className="text-gray-900 text-lg font-semibold">Top Win % <span className="text-sm font-normal text-gray-400">(30+ games)</span></h3>
           </div>
           <div className="space-y-0">
             {topWinPct.map((item, index) => (
