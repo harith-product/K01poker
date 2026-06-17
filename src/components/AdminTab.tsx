@@ -12,7 +12,7 @@ export type AdminScreen =
   | 'login' | 'home' | 'createSession' | 'sessionDetails'
   | 'currentSession' | 'manageMembers' | 'pastSessions' | 'pastSessionDetails';
 
-export function AdminTab() {
+export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers?: string[][] }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [screen, setScreen] = useState<AdminScreen>('login');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export function AdminTab() {
     <>
       {screen === 'home' && <AdminHome onNavigate={navigateTo} onLogout={handleLogout} />}
       {screen === 'createSession' && (
-        <CreateSession onBack={() => navigateTo('home')} onSessionCreated={id => navigateTo('sessionDetails', id)} />
+        <CreateSession onBack={() => navigateTo('home')} onSessionCreated={id => navigateTo('sessionDetails', id)} recentSessionsPlayers={recentSessionsPlayers} />
       )}
       {screen === 'sessionDetails' && selectedSessionId && (
         <SessionDetails sessionId={selectedSessionId} onBack={() => navigateTo('home')} />

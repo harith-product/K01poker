@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { getMembers, getSessions, createSession } from '../../lib/adminData';
-import type { Member, Session } from '../../lib/adminData';
+import { getMembers, createSession } from '../../lib/adminData';
+import type { Member } from '../../lib/adminData';
 import { useToast } from '../../lib/useToast';
 import { Toast } from './Toast';
 
 interface CreateSessionProps {
   onBack: () => void;
   onSessionCreated: (sessionId: string) => void;
+  recentSessionsPlayers?: string[][];
 }
 
 type RatioType = '1:1' | '1:2' | '1:4' | 'custom';
 
-export function CreateSession({ onBack, onSessionCreated }: CreateSessionProps) {
+export function CreateSession({ onBack, onSessionCreated, recentSessionsPlayers = [] }: CreateSessionProps) {
   const [buyInAmount, setBuyInAmount] = useState('500');
   const [ratioType, setRatioType] = useState<RatioType>('1:4');
   const [customCash, setCustomCash] = useState('');
@@ -24,19 +25,24 @@ export function CreateSession({ onBack, onSessionCreated }: CreateSessionProps) 
   const { message, toast } = useToast();
 
   useEffect(() => {
-    Promise.all([getMembers(), getSessions()]).then(([allMembers, allSessions]) => {
-      const lastSession = [...allSessions]
-        .filter((s: Session) => !s.isActive)
-        .sort((a: Session, b: Session) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-      const lastPlayers = new Set(lastSession?.members.map((m: { memberId: string }) => m.memberId) ?? []);
+    getMembers().then(allMembers => {
+      // Build a priority map: most recent session = priority 0, next = 1, etc.
+      // Members not in any recent session get priority = recentSessionsPlayers.length
+      const priorityMap = new Map<string, number>();
+      recentSessionsPlayers.forEach((players, i) => {
+        players.forEach(name => {
+          const key = name.toLowerCase();
+          if (!priorityMap.has(key)) priorityMap.set(key, i);
+        });
+      });
       const sorted = [...allMembers].sort((a, b) => {
-        const aIn = lastPlayers.has(a.id) ? 0 : 1;
-        const bIn = lastPlayers.has(b.id) ? 0 : 1;
-        return aIn - bIn;
+        const aPriority = priorityMap.get(a.name.toLowerCase()) ?? recentSessionsPlayers.length;
+        const bPriority = priorityMap.get(b.name.toLowerCase()) ?? recentSessionsPlayers.length;
+        return aPriority - bPriority;
       });
       setOrderedMembers(sorted);
     });
-  }, []);
+  }, [recentSessionsPlayers]);
 
   function toggle(id: string) {
     setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);

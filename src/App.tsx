@@ -91,7 +91,12 @@ export default function App() {
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={setSelectedPlayerId} />}
             {activeTab === 'balance' && <BalanceTab balance={balance} />}
-            {activeTab === 'admin' && <AdminTab />}
+            {activeTab === 'admin' && <AdminTab recentSessionsPlayers={
+              [...(offlineSessions.length ? offlineSessions : onlineSessions)]
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 10)
+                .map(s => Object.keys(s.players))
+            } />}
           </>
         )}
       </main>
