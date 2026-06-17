@@ -1,5 +1,5 @@
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { Player } from '../lib/types';
 
@@ -112,6 +112,14 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [showCompareDropdown, setShowCompareDropdown] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
+  const compareRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (comparePlayer && compareRef.current) {
+      setTimeout(() => compareRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+  }, [comparePlayer]);
+
   if (!open || !player) return null;
 
   const isPositive = player.totalWinnings >= 0;
@@ -271,7 +279,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
             </div>
           </button>
         ) : (
-        <div className="bg-white rounded-3xl p-5 shadow-sm">
+        <div ref={compareRef} className="bg-white rounded-3xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-gray-900 text-base font-bold">Compare</h3>
             <button onClick={() => { setShowCompare(false); setComparePlayer(null); setCompareSearch(''); }}
