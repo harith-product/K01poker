@@ -307,7 +307,8 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                       setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
                     }}
                     onChange={e => { setCompareSearch(e.target.value); setComparePlayer(null); }}
-                    className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 text-sm font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 font-bold text-gray-900 outline-none focus:border-purple-400 placeholder:font-normal placeholder:text-gray-400"
+                    style={{ fontSize: 16 }}
                   />
                   {showCompareDropdown && (
                     <>
