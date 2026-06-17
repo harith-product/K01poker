@@ -187,32 +187,29 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
           const losses = player.results.filter(r => r.amount < 0).length;
           const winPct = player.gamesPlayed > 0 ? Math.round((wins / player.gamesPlayed) * 100) : 0;
           return (
-            <div className="grid grid-cols-2 gap-3">
-              {stats.map(({ label, value, color }) => (
-                <div key={label} className="bg-white rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-xs text-gray-400 mb-1">{label}</p>
-                  <p className={`font-mono font-semibold text-base ${color}`}>{value}</p>
-                  {label === 'Games Played' && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-teal-400" />
-                          <span className="text-[10px] font-semibold text-green-600">{wins}W</span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-semibold text-red-600">{losses}L</span>
-                          <div className="w-2 h-2 rounded-full bg-rose-500" />
-                        </div>
-                      </div>
-                      <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
-                        <div className="bg-teal-400 rounded-full" style={{ width: `${winPct}%` }} />
-                        <div className="bg-rose-500 rounded-full flex-1" />
-                      </div>
-                    </div>
-                  )}
+            <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
+              {stats.map(({ label, value, color }, i) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <span className="text-gray-700 text-base font-medium">{label}</span>
+                    <span className={`font-mono font-bold text-lg ${color}`}>{value}</span>
+                  </div>
+                  {i < stats.length - 1 && <div className="h-px bg-gray-100 mx-5" />}
                 </div>
               ))}
+              {/* W/L bar */}
+              <div className="h-px bg-gray-100 mx-5" />
+              <div className="px-5 py-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-green-600">{wins}W</span>
+                  <span className="text-xs font-semibold text-gray-500">{winPct}% win</span>
+                  <span className="text-sm font-semibold text-red-600">{losses}L</span>
+                </div>
+                <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
+                  <div className="bg-teal-400 rounded-full" style={{ width: `${winPct}%` }} />
+                  <div className="bg-rose-500 rounded-full flex-1" />
+                </div>
+              </div>
             </div>
           );
         })()}
