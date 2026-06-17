@@ -24,12 +24,13 @@ function filterByPeriod(players: Player[], sessions: GameSession[], period: Time
       ? new Date(now.getTime() - 30 * 86400000)
       : null;
 
-  // For all periods except 'all', hide players inactive in last 60 games with <20 total games
-  const last60Sessions = [...sessions]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 60);
-  const activeInLast60 = new Set(
-    last60Sessions.flatMap(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
+  const sortedSessions = [...sessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const activeInLast50 = new Set(
+    sortedSessions.slice(0, 50).flatMap(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
+  );
+  const activeInLast30 = new Set(
+    sortedSessions.slice(0, 30).flatMap(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
   );
 
   return players
@@ -42,7 +43,10 @@ function filterByPeriod(players: Player[], sessions: GameSession[], period: Time
     })
     .filter(p => {
       if (period === 'all') return true;
-      const isInactive = !activeInLast60.has(p.name) && p.gamesPlayed < 20;
+      const totalGames = p.results.length; // use all-time games for inactive check
+      const isInactive =
+        (!activeInLast50.has(p.name) && totalGames < 20) ||
+        (!activeInLast30.has(p.name) && totalGames < 5);
       return !isInactive;
     })
     .sort((a, b) => b.totalWinnings - a.totalWinnings);
