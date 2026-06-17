@@ -193,12 +193,21 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                   <p className="text-xs text-gray-400 mb-1">{label}</p>
                   <p className={`font-mono font-semibold text-base ${color}`}>{value}</p>
                   {label === 'Games Played' && (
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <span className="text-[10px] font-semibold text-green-600">{wins}W</span>
-                      <span className="text-[10px] text-gray-300">/</span>
-                      <span className="text-[10px] font-semibold text-red-500">{losses}L</span>
-                      <span className="text-[10px] text-gray-300 ml-1">·</span>
-                      <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-teal-400" />
+                          <span className="text-[10px] font-semibold text-gray-600">{wins}W</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-gray-600">{losses}L</span>
+                          <div className="w-2 h-2 rounded-full bg-rose-500" />
+                        </div>
+                      </div>
+                      <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
+                        <div className="bg-teal-400 rounded-full" style={{ width: `${winPct}%` }} />
+                        <div className="bg-rose-500 rounded-full flex-1" />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -325,12 +334,21 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                             {p.totalWinnings >= 0 ? '+' : ''}{p.totalWinnings.toLocaleString()}
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5">{p.gamesPlayed} games</p>
-                          <div className="flex items-center gap-1 mt-1.5">
-                            <span className="text-[10px] font-semibold text-green-600">{wins}W</span>
-                            <span className="text-[10px] text-gray-300">/</span>
-                            <span className="text-[10px] font-semibold text-red-500">{losses}L</span>
-                            <span className="text-[10px] text-gray-300 ml-1">·</span>
-                            <span className="text-[10px] font-semibold text-gray-500">{winPct}% win</span>
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-teal-400" />
+                                <span className="text-[10px] font-semibold text-gray-600">{wins}W</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] font-semibold text-gray-600">{losses}L</span>
+                                <div className="w-2 h-2 rounded-full bg-rose-500" />
+                              </div>
+                            </div>
+                            <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
+                              <div className="bg-teal-400 rounded-full" style={{ width: `${winPct}%` }} />
+                              <div className="bg-rose-500 rounded-full flex-1" />
+                            </div>
                           </div>
                         </div>
                       );

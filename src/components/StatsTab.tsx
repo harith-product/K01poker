@@ -223,15 +223,24 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                   <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
                   <div className="flex-1 text-left">
                     <p className="text-gray-900">{item.player.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[10px] font-semibold text-green-600">{item.wins}W</span>
-                      <span className="text-[10px] text-gray-300">/</span>
-                      <span className="text-[10px] font-semibold text-red-500">{item.losses}L</span>
-                      <span className="text-[10px] text-gray-300 ml-1">·</span>
-                      <span className="text-[10px] text-gray-400">{item.player.gamesPlayed} games</span>
+                    <div className="mt-1.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-teal-400" />
+                          <span className="text-[10px] font-semibold text-gray-600">{item.wins}W</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-gray-600">{item.losses}L</span>
+                          <div className="w-2 h-2 rounded-full bg-rose-500" />
+                        </div>
+                      </div>
+                      <div className="flex rounded-full overflow-hidden h-2 gap-0.5">
+                        <div className="bg-teal-400 rounded-full" style={{ width: `${item.pct}%` }} />
+                        <div className="bg-rose-500 rounded-full flex-1" />
+                      </div>
                     </div>
                   </div>
-                  <span className="text-teal-600 font-mono font-semibold">{item.pct}%</span>
+                  <span className="text-teal-600 font-mono font-semibold ml-3">{item.pct}%</span>
                 </button>
                 {index < topWinPct.length - 1 && <div className="h-px bg-gray-100" />}
               </div>
