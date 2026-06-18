@@ -58,19 +58,26 @@ function PlayerPage({ data }: { data: AppData }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const mode = (localStorage.getItem('gameMode') as GameMode) ?? 'offline';
   const combined = mergePlayers(data.offlinePlayers, data.onlinePlayers);
 
-  // Try combined ID first; if not found, the click came from offline/online mode with
-  // a raw username ID — resolve it via display name to the combined player.
-  let player = combined.find(p => p.id === id) ?? null;
-  if (!player) {
-    const raw = data.offlinePlayers.find(p => p.id === id) ?? data.onlinePlayers.find(p => p.id === id);
-    if (raw) {
-      const combinedId = displayName(raw.name).toLowerCase().replace(/[^a-z0-9]/g, '_');
-      player = combined.find(p => p.id === combinedId) ?? raw;
+  let players: Player[];
+  let player: Player | null;
+
+  if (mode === 'combined') {
+    players = combined;
+    player = combined.find(p => p.id === id) ?? null;
+  } else {
+    const source = mode === 'online' ? data.onlinePlayers : data.offlinePlayers;
+    players = source;
+    player = source.find(p => p.id === id) ?? null;
+    // fallback: id may be from the other source
+    if (!player) {
+      const other = mode === 'online' ? data.offlinePlayers : data.onlinePlayers;
+      player = other.find(p => p.id === id) ?? null;
+      if (player) players = other;
     }
   }
-  const players = combined;
 
   // Show spinner while data hasn't arrived yet (loading or no players fetched yet)
   const stillLoading = data.loading || (data.offlinePlayers.length === 0 && data.onlinePlayers.length === 0);
