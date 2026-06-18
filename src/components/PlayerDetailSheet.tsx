@@ -2,6 +2,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { Player } from '../lib/types';
+import { displayName } from '../lib/displayNames';
 
 interface PlayerDetailSheetProps {
   player: Player | null;
@@ -152,7 +153,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
     return allDates.map(date => {
       if (aByDate.has(date)) cumA += aByDate.get(date)!;
       if (bByDate.has(date)) cumB += bByDate.get(date)!;
-      return { date: date.slice(5), [player.name]: cumA, [comparePlayer.name]: cumB };
+      return { date: date.slice(5), [displayName(player.name)]: cumA, [displayName(comparePlayer.name)]: cumB };
     });
   })();
 
@@ -177,10 +178,10 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
         </button>
         <div className={`flex items-start gap-4 ${fullPage ? 'pt-2 pl-12' : 'pt-2'}`}>
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
-            {player.name.charAt(0).toUpperCase()}
+            {displayName(player.name).charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
-            <h2 className="text-gray-900 text-2xl font-bold mb-1">{player.name}</h2>
+            <h2 className="text-gray-900 text-2xl font-bold mb-1">{displayName(player.name)}</h2>
             <p className={`text-2xl font-mono font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
               {fmt(player.totalWinnings, true)}
             </p>
@@ -291,14 +292,14 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 rounded-xl border border-violet-100">
                   <div className="w-2 h-2 rounded-full bg-violet-500" />
-                  <span className="text-sm font-bold text-gray-900">{player.name}</span>
+                  <span className="text-sm font-bold text-gray-900">{displayName(player.name)}</span>
                 </div>
                 <span className="text-xs text-gray-400 font-medium">vs</span>
                 <div className="relative flex-1">
                   <input
                     type="text"
                     placeholder="Search player…"
-                    value={showCompareDropdown ? compareSearch : (comparePlayer?.name ?? '')}
+                    value={showCompareDropdown ? compareSearch : (comparePlayer ? displayName(comparePlayer.name) : '')}
                     onFocus={e => {
                       setShowCompareDropdown(true);
                       setCompareSearch('');
@@ -314,10 +315,10 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setShowCompareDropdown(false)} />
                       <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-xl z-20 overflow-hidden border border-gray-100 max-h-44 overflow-y-auto">
-                        {otherPlayers.filter(p => p.name.toLowerCase().includes(compareSearch.toLowerCase())).map(p => (
+                        {otherPlayers.filter(p => displayName(p.name).toLowerCase().includes(compareSearch.toLowerCase())).map(p => (
                           <button key={p.id} onClick={() => { setComparePlayer(p); setShowCompareDropdown(false); setCompareSearch(''); }}
                             className="w-full text-left px-4 py-3 text-sm font-bold text-gray-900 hover:bg-violet-50 border-b border-gray-50 last:border-0">
-                            {p.name}
+                            {displayName(p.name)}
                           </button>
                         ))}
                       </div>
@@ -341,7 +342,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                         <div key={p.id} className={`${bg} border ${border} rounded-2xl px-3 py-2.5`}>
                           <div className="flex items-center gap-1.5 mb-1">
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                            <span className="text-xs text-gray-500 font-medium">{p.name}</span>
+                            <span className="text-xs text-gray-500 font-medium">{displayName(p.name)}</span>
                           </div>
                           <p className={`text-base font-bold font-mono ${p.totalWinnings >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                             {p.totalWinnings >= 0 ? '+' : ''}{p.totalWinnings.toLocaleString()}
@@ -379,8 +380,8 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                         contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
                       />
                       <ReferenceLine y={0} stroke="#000" strokeWidth={1.5} />
-                      <Line type="monotone" dataKey={player.name} stroke="#8b5cf6" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey={comparePlayer.name} stroke="#f97316" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey={displayName(player.name)} stroke="#8b5cf6" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey={displayName(comparePlayer.name)} stroke="#f97316" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </>

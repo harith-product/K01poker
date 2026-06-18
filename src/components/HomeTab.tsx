@@ -1,5 +1,6 @@
 import { Trophy, Crown, Medal, Award, ChevronRight } from 'lucide-react';
 import type { Player, GameSession } from '../lib/types';
+import { displayName } from '../lib/displayNames';
 
 function formatWithSign(value: number): string {
   const str = value.toLocaleString();
@@ -69,89 +70,89 @@ export function HomeTab({ players, sessions, onPlayerClick, period }: HomeTabPro
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-8 space-y-4">
+    <div className="max-w-lg mx-auto px-3 pt-2 pb-6 space-y-2">
 
       {/* Podium - Top 3 */}
       {top3.length >= 3 && (
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
-          <h2 className="text-gray-900 text-xl font-bold mb-6">Top 3 Players</h2>
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h2 className="text-gray-900 text-base font-bold mb-4">Top 3 Players</h2>
           <div className="flex items-end justify-evenly">
             {/* 2nd */}
-            <button onClick={() => onPlayerClick(top3[1].id)} className="flex flex-col items-center w-24">
-              <div className="relative mb-3">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center border-4 border-white shadow-lg">
-                  <Medal className="w-10 h-10 text-white" />
+            <button onClick={() => onPlayerClick(top3[1].id)} className="flex flex-col items-center w-20">
+              <div className="relative mb-2">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center border-3 border-white shadow-md">
+                  <Medal className="w-7 h-7 text-white" />
                 </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center shadow-md">
-                  <span className="text-gray-600 text-sm font-bold">2</span>
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center shadow-sm">
+                  <span className="text-gray-600 text-xs font-bold">2</span>
                 </div>
               </div>
-              <p className="text-gray-900 font-bold truncate w-full text-center text-sm mb-1">{top3[1].name}</p>
-              <p className={`font-mono font-semibold text-sm ${top3[1].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-gray-900 font-bold truncate w-full text-center text-xs mb-0.5 mt-1">{displayName(top3[1].name)}</p>
+              <p className={`font-mono font-semibold text-xs ${top3[1].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatWithSign(top3[1].totalWinnings)}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">{top3[1].gamesPlayed} games</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{top3[1].gamesPlayed} games</p>
             </button>
 
             {/* 1st */}
-            <button onClick={() => onPlayerClick(top3[0].id)} className="flex flex-col items-center w-28 -mt-6">
-              <Crown className="w-8 h-8 text-yellow-500 mb-2" />
-              <div className="relative mb-3">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center border-4 border-white shadow-xl">
-                  <Trophy className="w-12 h-12 text-white" />
+            <button onClick={() => onPlayerClick(top3[0].id)} className="flex flex-col items-center w-24 -mt-4">
+              <Crown className="w-6 h-6 text-yellow-500 mb-1" />
+              <div className="relative mb-2">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center border-3 border-white shadow-lg">
+                  <Trophy className="w-8 h-8 text-white" />
                 </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center shadow-md">
-                  <span className="text-orange-600 font-bold">1</span>
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center shadow-sm">
+                  <span className="text-orange-600 text-xs font-bold">1</span>
                 </div>
               </div>
-              <p className="text-gray-900 font-bold truncate w-full text-center mb-1">{top3[0].name}</p>
-              <p className={`font-mono font-semibold ${top3[0].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-gray-900 font-bold truncate w-full text-center text-sm mb-0.5 mt-1">{displayName(top3[0].name)}</p>
+              <p className={`font-mono font-semibold text-sm ${top3[0].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatWithSign(top3[0].totalWinnings)}
               </p>
-              <p className="text-sm text-gray-400 mt-0.5">{top3[0].gamesPlayed} games</p>
+              <p className="text-xs text-gray-400 mt-0.5">{top3[0].gamesPlayed} games</p>
             </button>
 
             {/* 3rd */}
-            <button onClick={() => onPlayerClick(top3[2].id)} className="flex flex-col items-center w-24">
-              <div className="relative mb-3">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center border-4 border-white shadow-lg">
-                  <Award className="w-10 h-10 text-white" />
+            <button onClick={() => onPlayerClick(top3[2].id)} className="flex flex-col items-center w-20">
+              <div className="relative mb-2">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center border-3 border-white shadow-md">
+                  <Award className="w-7 h-7 text-white" />
                 </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border-2 border-orange-300 flex items-center justify-center shadow-md">
-                  <span className="text-orange-600 text-sm font-bold">3</span>
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white border-2 border-orange-300 flex items-center justify-center shadow-sm">
+                  <span className="text-orange-600 text-xs font-bold">3</span>
                 </div>
               </div>
-              <p className="text-gray-900 font-bold truncate w-full text-center text-sm mb-1">{top3[2].name}</p>
-              <p className={`font-mono font-semibold text-sm ${top3[2].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-gray-900 font-bold truncate w-full text-center text-xs mb-0.5 mt-1">{displayName(top3[2].name)}</p>
+              <p className={`font-mono font-semibold text-xs ${top3[2].totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatWithSign(top3[2].totalWinnings)}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">{top3[2].gamesPlayed} games</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{top3[2].gamesPlayed} games</p>
             </button>
           </div>
         </div>
       )}
 
       {/* 4th onwards */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {rest.map((player, index) => {
           const rank = index + 4;
           return (
             <button
               key={player.id}
               onClick={() => onPlayerClick(player.id)}
-              className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-3"
+              className="w-full bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-all flex items-center gap-3"
             >
-              <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-gray-100 text-gray-500 flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs bg-gray-100 text-gray-500 flex-shrink-0">
                 {rank}
               </div>
               <div className="flex-1 text-left min-w-0">
-                <p className="text-gray-900 font-bold text-base truncate">{player.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{player.gamesPlayed} games</p>
+                <p className="text-gray-900 font-bold text-sm truncate">{displayName(player.name)}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{player.gamesPlayed} games</p>
               </div>
-              <p className={`font-mono font-semibold text-base ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`font-mono font-semibold text-sm ${player.totalWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatWithSign(player.totalWinnings)}
               </p>
-              <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
             </button>
           );
         })}

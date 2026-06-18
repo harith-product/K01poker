@@ -2,6 +2,7 @@ import { Gamepad2 } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import type { GameSession, Player } from '../lib/types';
+import { displayName } from '../lib/displayNames';
 
 interface GamesTabProps {
   sessions: GameSession[];
@@ -88,7 +89,7 @@ export function GamesTab({ sessions, players, onPlayerClick }: GamesTabProps) {
                         className="grid grid-cols-12 gap-4 px-5 py-3 hover:bg-gray-50 transition-colors w-full"
                       >
                         <div className="col-span-2 text-gray-500 font-mono text-sm">{rank + 1}</div>
-                        <div className="col-span-6 text-gray-900 text-left text-sm">{name}</div>
+                        <div className="col-span-6 text-gray-900 text-left text-sm">{displayName(name)}</div>
                         <div className={`col-span-4 font-mono text-right text-sm ${amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {amount >= 0 ? '+' : ''}{amount.toLocaleString()}
                         </div>
@@ -120,7 +121,7 @@ export function GamesTab({ sessions, players, onPlayerClick }: GamesTabProps) {
                 className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 transition-colors w-full"
               >
                 <div className="col-span-2 text-gray-600 font-mono">{rank + 1}</div>
-                <div className="col-span-6 text-gray-900 text-left">{name}</div>
+                <div className="col-span-6 text-gray-900 text-left">{displayName(name)}</div>
                 <div className={`col-span-4 font-mono text-right ${amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {amount >= 0 ? '+' : ''}{amount.toLocaleString()}
                 </div>

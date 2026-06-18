@@ -144,7 +144,7 @@ function MainApp({ data }: { data: AppData }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-200 via-white to-fuchsia-100">
       <main ref={mainRef} className="pb-24 min-h-screen overflow-y-auto" style={{ height: '100vh' }}>
-        <div className="px-4 pt-5 pb-2">
+        <div className="px-4 pt-3 pb-1">
           <div className="max-w-lg mx-auto flex items-center gap-2">
             <h1 className="text-gray-900 text-2xl font-bold">K01 Poker</h1>
             <button

@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, Flame, Moon, Zap, Home, ChevronDown, Star, Percent } from 'lucide-react';
 import { useState } from 'react';
 import type { Player, GameSession } from '../lib/types';
+import { displayName } from '../lib/displayNames';
 
 interface StatsTabProps {
   players: Player[];
@@ -96,9 +97,9 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
   const avgPlayers = playersPerSession.length > 0 ? Math.round(playersPerSession.reduce((a, b) => a + b, 0) / playersPerSession.length) : 0;
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-8 space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-gray-900 text-2xl">Stats</h1>
+    <div className="max-w-lg mx-auto px-3 pt-3 pb-6 space-y-3">
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-gray-900 text-lg font-bold">Stats</h1>
         <div className="relative">
           <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg shadow-sm text-sm">
             <span className="text-gray-900">{labels[period]}</span>
@@ -119,12 +120,12 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
 
       <div className="grid grid-cols-1 gap-4">
         {categories.map(({ label, data, Icon, color, valueColor, fmt }) => (
-          <div key={label} className="bg-white rounded-3xl p-5 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-md`}>
-                <Icon className="w-5 h-5 text-white" />
+          <div key={label} className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center shadow-sm`}>
+                <Icon className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-gray-900 text-lg font-semibold">{label}</h3>
+              <h3 className="text-gray-900 text-sm font-semibold">{label}</h3>
             </div>
             <div className="space-y-0">
               {data.map((item, index) => (
@@ -133,7 +134,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                     onClick={() => onPlayerClick(item.player.id)}
                     className="w-full flex items-center justify-between py-3 px-1 hover:bg-gray-50 rounded-lg transition-all"
                   >
-                    <span className="text-gray-900">{item.player.name}</span>
+                    <span className="text-gray-900">{displayName(item.player.name)}</span>
                     <span className={`${valueColor} font-mono`}>{fmt(item.value)}</span>
                   </button>
                   {index < data.length - 1 && <div className="h-px bg-gray-100" />}
@@ -146,12 +147,12 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
 
       {/* Top Average Wins (5+ games) */}
       {topAvgWins.length > 0 && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md">
-              <Star className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-sm">
+              <Star className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-gray-900 text-lg font-semibold">Top 5 Avg Wins <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+            <h3 className="text-gray-900 text-sm font-semibold">Top 5 Avg Wins <span className="text-xs font-normal text-gray-400">(5+ games)</span></h3>
           </div>
           <div className="space-y-0">
             {topAvgWins.map((item, index) => (
@@ -162,7 +163,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                 >
                   <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-gray-900">{item.player.name}</p>
+                    <p className="text-gray-900">{displayName(item.player.name)}</p>
                     <p className="text-xs text-gray-400">{item.player.gamesPlayed} games</p>
                   </div>
                   <span className={`font-mono ${item.avg >= 0 ? 'text-green-600' : 'text-red-600'}`}>{item.avg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/game</span>
@@ -176,12 +177,12 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
 
       {/* Top Avg Losses (5+ games) */}
       {topAvgLosses.length > 0 && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center shadow-md">
-              <TrendingDown className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center shadow-sm">
+              <TrendingDown className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-gray-900 text-lg font-semibold">Top 5 Avg Losses <span className="text-sm font-normal text-gray-400">(5+ games)</span></h3>
+            <h3 className="text-gray-900 text-sm font-semibold">Top 5 Avg Losses <span className="text-xs font-normal text-gray-400">(5+ games)</span></h3>
           </div>
           <div className="space-y-0">
             {topAvgLosses.map((item, index) => (
@@ -192,7 +193,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                 >
                   <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-gray-900">{item.player.name}</p>
+                    <p className="text-gray-900">{displayName(item.player.name)}</p>
                     <p className="text-xs text-gray-400">{item.player.gamesPlayed} games</p>
                   </div>
                   <span className="text-red-600 font-mono">{item.avg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/game</span>
@@ -206,12 +207,12 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
 
       {/* Top Win % (5+ games) */}
       {topWinPct.length > 0 && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-fuchsia-500 flex items-center justify-center shadow-md">
-              <Percent className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-fuchsia-500 flex items-center justify-center shadow-sm">
+              <Percent className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-gray-900 text-lg font-semibold">Top Win % <span className="text-sm font-normal text-gray-400">(30+ games)</span></h3>
+            <h3 className="text-gray-900 text-sm font-semibold">Top Win % <span className="text-xs font-normal text-gray-400">(30+ games)</span></h3>
           </div>
           <div className="space-y-0">
             {topWinPct.map((item, index) => (
@@ -222,7 +223,7 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
                 >
                   <span className="text-indigo-500 font-semibold w-8 text-sm">#{index + 1}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-gray-900">{item.player.name}</p>
+                    <p className="text-gray-900">{displayName(item.player.name)}</p>
                     <div className="mt-1.5">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-1">
@@ -250,12 +251,12 @@ export function StatsTab({ players, sessions, onPlayerClick }: StatsTabProps) {
       )}
 
       {/* House Stats */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-400 to-gray-500 flex items-center justify-center shadow-md">
-            <Home className="w-5 h-5 text-white" />
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-400 to-gray-500 flex items-center justify-center shadow-sm">
+            <Home className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-gray-900 text-lg font-semibold">House Statistics</h3>
+          <h3 className="text-gray-900 text-sm font-semibold">House Statistics</h3>
         </div>
         <div className="space-y-0">
           <div className="flex items-center justify-between py-3 px-1">
