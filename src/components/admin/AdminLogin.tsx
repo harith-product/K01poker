@@ -31,15 +31,15 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mb-6 shadow-lg">
         <Shield className="w-8 h-8 text-white" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Enter K01 Digital House</h1>
-      <p className="text-gray-500 text-sm mb-8 text-center">Enter your ID and key to continue</p>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Enter Room</h1>
+      <p className="text-gray-500 text-sm mb-8 text-center">Enter your ID and access key to continue</p>
 
       <div className="w-full space-y-3">
         <div className="flex items-center gap-3 bg-white rounded-2xl px-4 py-4 shadow-sm border border-gray-100">
           <User className="w-5 h-5 text-gray-400 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Your ID"
+            placeholder="Player ID"
             value={id}
             onChange={e => { setId(e.target.value); setError(''); }}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -53,7 +53,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <KeyRound className="w-5 h-5 text-gray-400 flex-shrink-0" />
           <input
             type="password"
-            placeholder="Key"
+            placeholder="Access Key"
             value={key}
             onChange={e => { setKey(e.target.value); setError(''); }}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
