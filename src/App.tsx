@@ -9,8 +9,9 @@ import { AdminTab } from './components/AdminTab';
 import { PlayerDetailSheet } from './components/PlayerDetailSheet';
 import { fetchSheetData, fetchOfflineSheetData, fetchBalanceData } from './lib/googleSheets';
 import type { Player, GameSession, BalanceData } from './lib/types';
+import { displayName } from './lib/displayNames';
 
-export type GameMode = 'online' | 'offline';
+export type GameMode = 'online' | 'offline' | 'combined';
 
 interface AppData {
   onlinePlayers: Player[];
@@ -57,13 +58,12 @@ function PlayerPage({ data }: { data: AppData }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Search both offline and online players
-  const player = data.offlinePlayers.find(p => p.id === id)
+  const combined = mergePlayers(data.offlinePlayers, data.onlinePlayers);
+  const player = combined.find(p => p.id === id)
+    ?? data.offlinePlayers.find(p => p.id === id)
     ?? data.onlinePlayers.find(p => p.id === id)
     ?? null;
-  const players = data.offlinePlayers.find(p => p.id === id)
-    ? data.offlinePlayers
-    : data.onlinePlayers;
+  const players = combined;
 
   // Show spinner while data hasn't arrived yet (loading or no players fetched yet)
   const stillLoading = data.loading || (data.offlinePlayers.length === 0 && data.onlinePlayers.length === 0);
@@ -105,16 +105,45 @@ function PlayerPage({ data }: { data: AppData }) {
   );
 }
 
+function mergePlayers(offline: Player[], online: Player[]): Player[] {
+  const map = new Map<string, Player>();
+  [...offline, ...online].forEach(p => {
+    const key = displayName(p.name);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, { ...p, name: key, id: key.toLowerCase().replace(/[^a-z0-9]/g, '_') });
+    } else {
+      const results = [...existing.results, ...p.results].sort((a, b) => a.date.localeCompare(b.date));
+      const totalWinnings = results.reduce((s, r) => s + r.amount, 0);
+      const gamesPlayed = results.length;
+      map.set(key, {
+        ...existing,
+        results,
+        totalWinnings,
+        gamesPlayed,
+        avgPerGame: gamesPlayed > 0 ? Math.round(totalWinnings / gamesPlayed) : 0,
+        bestResult: Math.max(...results.map(r => r.amount)),
+        worstResult: Math.min(...results.map(r => r.amount)),
+      });
+    }
+  });
+  return [...map.values()];
+}
+
 function MainApp({ data }: { data: AppData }) {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'offline');
+  const [modeOpen, setModeOpen] = useState(false);
   const [period, setPeriod] = useState<TimePeriod>('overall');
   const [periodOpen, setPeriodOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  const players = mode === 'online' ? data.onlinePlayers : data.offlinePlayers;
-  const sessions = mode === 'online' ? data.onlineSessions : data.offlineSessions;
+  const combinedPlayers = mergePlayers(data.offlinePlayers, data.onlinePlayers);
+  const combinedSessions = [...data.offlineSessions, ...data.onlineSessions];
+
+  const players = mode === 'online' ? data.onlinePlayers : mode === 'offline' ? data.offlinePlayers : combinedPlayers;
+  const sessions = mode === 'online' ? data.onlineSessions : mode === 'offline' ? data.offlineSessions : combinedSessions;
 
   // Restore scroll position when returning from player page
   useEffect(() => {
@@ -147,15 +176,32 @@ function MainApp({ data }: { data: AppData }) {
         <div className="px-4 pt-3 pb-1">
           <div className="max-w-lg mx-auto flex items-center gap-2">
             <h1 className="text-gray-900 text-2xl font-bold">K01 Poker</h1>
-            <button
-              onClick={() => handleModeChange(mode === 'online' ? 'offline' : 'online')}
-              className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg shadow-sm border border-gray-100"
-            >
-              <span className="text-teal-600 font-semibold text-sm">{mode === 'online' ? 'Online' : 'Offline'}</span>
-              <svg className="w-3.5 h-3.5 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M8 9l4-4 4 4M8 15l4 4 4-4" />
-              </svg>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setModeOpen(o => !o)}
+                className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg shadow-sm border border-gray-100"
+              >
+                <span className="text-teal-600 font-semibold text-sm">
+                  {mode === 'online' ? 'Online' : mode === 'offline' ? 'Offline' : 'Combined'}
+                </span>
+                <svg className="w-3.5 h-3.5 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {modeOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setModeOpen(false)} />
+                  <div className="absolute left-0 mt-1 bg-white rounded-xl shadow-lg z-20 min-w-[130px] overflow-hidden border border-gray-100">
+                    {(['offline', 'online', 'combined'] as GameMode[]).map(m => (
+                      <button key={m} onClick={() => { handleModeChange(m); setModeOpen(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 capitalize ${mode === m ? 'font-bold text-teal-600' : 'text-gray-700'}`}>
+                        {m.charAt(0).toUpperCase() + m.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
             {activeTab === 'home' && (
               <div className="relative ml-auto">
                 <button
