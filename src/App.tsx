@@ -262,7 +262,7 @@ function MainApp({ data }: { data: AppData }) {
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'balance' && <BalanceTab onlinePlayers={data.onlinePlayers} mode={mode} />}
-            {activeTab === 'admin' && <AdminTab recentSessionsPlayers={
+            {activeTab === 'admin' && <AdminTab mode={mode} onlinePlayers={data.onlinePlayers} recentSessionsPlayers={
               [...(data.offlineSessions.length ? data.offlineSessions : data.onlineSessions)]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .slice(0, 10)

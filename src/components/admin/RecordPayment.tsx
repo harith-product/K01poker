@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { getMembers } from '../../lib/adminData';
 import type { Member } from '../../lib/adminData';
+import { displayName } from '../../lib/displayNames';
+import type { Player } from '../../lib/types';
 
 interface RecordPaymentProps {
   onBack: () => void;
   adminId: string;
+  mode?: string;
+  onlinePlayers?: Player[];
 }
 
 interface PlayerBalance { name: string; balance: number; }
@@ -26,7 +30,7 @@ async function fetchBalances(): Promise<PlayerBalance[]> {
     .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
 }
 
-export function RecordPayment({ onBack, adminId }: RecordPaymentProps) {
+export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers = [] }: RecordPaymentProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [balances, setBalances] = useState<PlayerBalance[] | null>(null);
   const [playerName, setPlayerName] = useState('');
@@ -40,8 +44,40 @@ export function RecordPayment({ onBack, adminId }: RecordPaymentProps) {
 
   useEffect(() => {
     getMembers().then(setMembers);
-    fetchBalances().then(setBalances).catch(() => setBalances([]));
-  }, []);
+    if (mode === 'online') {
+      // Online: pure P&L from sheet data
+      const map: Record<string, number> = {};
+      for (const p of onlinePlayers) {
+        const name = displayName(p.name);
+        map[name] = (map[name] ?? 0) + p.totalWinnings;
+      }
+      const result = Object.entries(map)
+        .filter(([, b]) => Math.abs(b) >= 0.01)
+        .map(([name, balance]) => ({ name, balance }))
+        .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
+      setBalances(result);
+    } else {
+      fetchBalances().then(b => {
+        if (mode === 'combined') {
+          // Add online P&L on top
+          const onlineMap: Record<string, number> = {};
+          for (const p of onlinePlayers) {
+            const name = displayName(p.name);
+            onlineMap[name] = (onlineMap[name] ?? 0) + p.totalWinnings;
+          }
+          const combined = [...b];
+          for (const [name, amt] of Object.entries(onlineMap)) {
+            const existing = combined.find(x => x.name === name);
+            if (existing) existing.balance += amt;
+            else combined.push({ name, balance: amt });
+          }
+          setBalances(combined.filter(x => Math.abs(x.balance) >= 0.01).sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance)));
+        } else {
+          setBalances(b);
+        }
+      }).catch(() => setBalances([]));
+    }
+  }, [mode, onlinePlayers]);
 
   const filtered = members.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 

@@ -16,7 +16,7 @@ export type AdminScreen =
   | 'currentSession' | 'manageMembers' | 'pastSessions' | 'pastSessionDetails'
   | 'recordPayment';
 
-export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers?: string[][] }) {
+export function AdminTab({ recentSessionsPlayers = [], mode, onlinePlayers }: { recentSessionsPlayers?: string[][], mode?: string, onlinePlayers?: import('../lib/types').Player[] }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [adminId, setAdminId] = useState('');
   const [screen, setScreen] = useState<AdminScreen>('login');
@@ -79,7 +79,7 @@ export function AdminTab({ recentSessionsPlayers = [] }: { recentSessionsPlayers
         <PastSessionDetails sessionId={selectedSessionId} onBack={() => navigateTo('pastSessions')} />
       )}
       {screen === 'recordPayment' && (
-        <RecordPayment onBack={() => navigateTo('home')} adminId={adminId} />
+        <RecordPayment onBack={() => navigateTo('home')} adminId={adminId} mode={mode} onlinePlayers={onlinePlayers} />
       )}
     </>
   );
