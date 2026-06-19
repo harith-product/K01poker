@@ -269,16 +269,21 @@ export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers
                 const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                 return (
                   <div key={s.id} className="flex items-center justify-between px-5 py-3.5">
-                    <div>
-                      <p className="text-gray-900 text-sm font-medium">{s.playerName}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {s.direction === 'player_paid_house' ? 'Player → House' : 'House → Player'}
-                        {s.notes ? ` · ${s.notes}` : ''}
-                      </p>
-                      <p className="text-[11px] text-gray-300 mt-0.5">{dateStr} · {timeStr}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base ${s.direction === 'player_paid_house' ? 'bg-green-100' : 'bg-red-100'}`}>
+                        {s.direction === 'player_paid_house' ? '↙' : '↗'}
+                      </div>
+                      <div>
+                        <p className="text-gray-900 text-sm font-medium">{s.playerName}</p>
+                        <p className={`text-xs font-medium mt-0.5 ${s.direction === 'player_paid_house' ? 'text-green-600' : 'text-red-500'}`}>
+                          {s.direction === 'player_paid_house' ? 'Received' : 'Given out'}
+                          {s.notes ? <span className="text-gray-400 font-normal"> · {s.notes}</span> : ''}
+                        </p>
+                        <p className="text-[11px] text-gray-300 mt-0.5">{dateStr} · {timeStr}</p>
+                      </div>
                     </div>
-                    <span className={`font-mono text-sm font-semibold ${s.direction === 'player_paid_house' ? 'text-blue-600' : 'text-violet-600'}`}>
-                      ₹{Number(s.amount).toLocaleString()}
+                    <span className={`font-mono text-sm font-semibold ${s.direction === 'player_paid_house' ? 'text-green-600' : 'text-red-500'}`}>
+                      {s.direction === 'player_paid_house' ? '+' : '-'}₹{Number(s.amount).toLocaleString()}
                     </span>
                   </div>
                 );
