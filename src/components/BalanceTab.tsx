@@ -156,11 +156,6 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
         </div>
       )}
 
-      {mode === 'online' && (
-        <div className="bg-blue-50 rounded-2xl p-3 text-blue-700 text-xs font-medium">
-          Online games only · No rake applied
-        </div>
-      )}
 
       <BalanceList houseOwes={houseOwes} owesHouse={owesHouse} />
 
