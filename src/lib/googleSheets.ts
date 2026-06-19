@@ -33,15 +33,26 @@ function parseAmount(val: string): number {
   return parseFloat(val.replace(/,/g, '')) || 0;
 }
 
+function parseCSVRow(row: string): string[] {
+  const cells: string[] = [];
+  let cur = '';
+  let inQuote = false;
+  for (const ch of row) {
+    if (ch === '"') { inQuote = !inQuote; }
+    else if (ch === ',' && !inQuote) { cells.push(cur.trim()); cur = ''; }
+    else { cur += ch; }
+  }
+  cells.push(cur.trim());
+  return cells;
+}
+
 async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string): Promise<{ players: Player[]; sessions: GameSession[] }> {
   if (!url) return { players: [], sessions: [] };
 
   const resp = await fetch(url);
   const text = await resp.text();
 
-  const rows = text.split('\n').map(r =>
-    r.split(',').map(c => c.trim().replace(/^"|"$/g, ''))
-  );
+  const rows = text.split('\n').map(parseCSVRow);
 
   if (rows.length < 2) return { players: [], sessions: [] };
 
