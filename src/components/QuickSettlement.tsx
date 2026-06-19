@@ -1,4 +1,4 @@
-import { computeSettlements, shareText } from '../lib/settlement';
+import { computeSettlements } from '../lib/settlement';
 import type { Transfer } from '../lib/settlement';
 
 interface Props {
@@ -23,16 +23,6 @@ export function QuickSettlement({ balances, onClose }: Props) {
   for (const t of transfers) {
     if (!groups[t.from]) groups[t.from] = [];
     groups[t.from].push(t);
-  }
-
-  async function handleShare() {
-    const text = shareText(transfers);
-    if (navigator.share) {
-      await navigator.share({ text }).catch(() => {});
-    } else {
-      await navigator.clipboard.writeText(text).catch(() => {});
-      alert('Copied to clipboard!');
-    }
   }
 
   return (
@@ -82,23 +72,6 @@ export function QuickSettlement({ balances, onClose }: Props) {
           ))}
         </div>
 
-        {/* CTAs */}
-        {transfers.length > 0 && (
-          <div className="px-5 pb-8 pt-3 flex gap-3 border-t border-gray-100">
-            <button
-              onClick={handleShare}
-              className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-700 font-semibold text-sm"
-            >
-              Share Plan
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white font-semibold text-sm shadow-md"
-            >
-              Done
-            </button>
-          </div>
-        )}
       </div>
     </>
   );
