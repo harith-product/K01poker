@@ -17,7 +17,7 @@ export interface BalanceData {
 export interface Player {
   id: string;
   name: string;
-  results: { date: string; session: string; amount: number }[];
+  results: { date: string; session: string; amount: number; source?: 'online' | 'offline' }[];
   totalWinnings: number;
   gamesPlayed: number;
   avgPerGame: number;

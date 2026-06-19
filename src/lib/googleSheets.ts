@@ -46,7 +46,7 @@ function parseCSVRow(row: string): string[] {
   return cells;
 }
 
-async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string): Promise<{ players: Player[]; sessions: GameSession[] }> {
+async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string, source?: 'online' | 'offline'): Promise<{ players: Player[]; sessions: GameSession[] }> {
   if (!url) return { players: [], sessions: [] };
 
   const resp = await fetch(url);
@@ -82,7 +82,7 @@ async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string)
       const amount = parseAmount(row[colIdx]);
       playerPnL[name] = amount;
       if (amount !== 0) {
-        playerResultsMap[name].push({ date, session, amount });
+        playerResultsMap[name].push({ date, session, amount, ...(source ? { source } : {}) });
       }
     });
 
@@ -141,11 +141,11 @@ async function fetchWithCache(key: string, fetcher: () => Promise<SheetResult>):
 }
 
 export async function fetchSheetData() {
-  return fetchWithCache('cache_online', () => parseSheetCSV(SHEET_CSV_URL));
+  return fetchWithCache('cache_online', () => parseSheetCSV(SHEET_CSV_URL, undefined, 'online'));
 }
 
 export async function fetchOfflineSheetData() {
-  return fetchWithCache('cache_offline', () => parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s)));
+  return fetchWithCache('cache_offline', () => parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s), 'offline'));
 }
 
 async function fetchBalanceRaw(): Promise<BalanceData> {

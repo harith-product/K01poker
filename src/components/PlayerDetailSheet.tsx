@@ -406,6 +406,7 @@ export function PlayerDetailSheet({ player, allPlayers = [], open, onClose, full
                       {new Date(result.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                     {result.session && result.session.toLowerCase() !== 'main' && <span className="text-xs text-gray-400 ml-2">{result.session}</span>}
+                    {localStorage.getItem('gameMode') === 'combined' && result.source === 'online' && <span className="text-xs text-violet-400 ml-1.5 font-medium">online</span>}
                   </div>
                   <span className={`font-mono font-semibold text-sm ${result.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {fmt(result.amount, true)}
