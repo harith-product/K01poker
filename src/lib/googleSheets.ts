@@ -47,7 +47,11 @@ async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string)
 
   // Row 0 is headers: Date, Session, player1, player2, ...
   const headers = rows[0];
-  const playerNames = headers.slice(2).filter(h => h !== '');
+  // Preserve original column index so empty header gaps don't shift data reads
+  const playerCols = headers.slice(2)
+    .map((name, idx) => ({ name, colIdx: idx + 2 }))
+    .filter(({ name }) => name !== '');
+  const playerNames = playerCols.map(p => p.name);
 
   const sessions: GameSession[] = [];
   const playerResultsMap: Record<string, { date: string; session: string; amount: number }[]> = {};
@@ -63,8 +67,8 @@ async function parseSheetCSV(url: string, sessionFilter?: (s: string) => string)
     const session = sessionFilter ? sessionFilter(rawSession) : rawSession;
     const playerPnL: Record<string, number> = {};
 
-    playerNames.forEach((name, idx) => {
-      const amount = parseAmount(row[idx + 2]);
+    playerCols.forEach(({ name, colIdx }) => {
+      const amount = parseAmount(row[colIdx]);
       playerPnL[name] = amount;
       if (amount !== 0) {
         playerResultsMap[name].push({ date, session, amount });
