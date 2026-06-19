@@ -99,13 +99,19 @@ export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers
           recordedBy: adminId,
         }),
       });
-      // Reset form and stay on page
+      // Reset form and stay on page, refresh data
       setPlayerName('');
       setSearch('');
       setAmount('');
       setNotes('');
       setDone(true);
       setTimeout(() => setDone(false), 2000);
+      // Refresh settlements and balances
+      fetch('/api/balance-data').then(r => r.json()).then(d => {
+        setSettlements(d.settlements ?? []);
+        // Recompute balances with updated settlements
+        fetchBalances().then(b => setBalances(b)).catch(() => {});
+      }).catch(() => {});
     } catch {
       setSaving(false);
     }

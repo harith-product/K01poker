@@ -107,6 +107,11 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
       onlineBalanceMap[name] = (onlineBalanceMap[name] ?? 0) + player.totalWinnings;
     }
   }
+  // Settlements apply to all modes — they're real money movements
+  for (const s of data.settlements) {
+    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
+    onlineBalanceMap[s.playerName] = (onlineBalanceMap[s.playerName] ?? 0) + adj;
+  }
 
   // --- Offline balance: snapshot + new DB sessions (10% rake) + settlements ---
   const offlineBalanceMap: Record<string, number> = {};
@@ -125,6 +130,11 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
   const combinedBalanceMap: Record<string, number> = { ...offlineBalanceMap };
   for (const [name, amount] of Object.entries(onlineBalanceMap)) {
     combinedBalanceMap[name] = (combinedBalanceMap[name] ?? 0) + amount;
+  }
+  // Settlements already counted in both maps, remove double-count in combined
+  for (const s of data.settlements) {
+    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
+    combinedBalanceMap[s.playerName] = (combinedBalanceMap[s.playerName] ?? 0) - adj;
   }
 
   const sourceMap =
