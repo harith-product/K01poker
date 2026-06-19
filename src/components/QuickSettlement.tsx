@@ -18,9 +18,6 @@ function Avatar({ name, color }: { name: string; color: 'green' | 'red' }) {
 export function QuickSettlement({ balances, onClose }: Props) {
   const transfers = computeSettlements(balances);
 
-  const totalAmount = transfers.reduce((s, t) => s + t.amount, 0);
-  const players = new Set([...transfers.map(t => t.from), ...transfers.map(t => t.to)]).size;
-
   // Group by payer
   const groups: Record<string, Transfer[]> = {};
   for (const t of transfers) {
@@ -52,25 +49,6 @@ export function QuickSettlement({ balances, onClose }: Props) {
             <button onClick={onClose} className="text-gray-400 text-sm font-medium mt-0.5">Close</button>
           </div>
 
-          {/* Summary card */}
-          {transfers.length > 0 && (
-            <div className="mt-4 bg-violet-50 rounded-2xl px-4 py-3 flex items-center justify-around">
-              <div className="text-center">
-                <p className="text-violet-700 font-bold text-lg">{transfers.length}</p>
-                <p className="text-violet-400 text-xs">Transfers</p>
-              </div>
-              <div className="w-px h-8 bg-violet-200" />
-              <div className="text-center">
-                <p className="text-violet-700 font-bold text-lg">₹{totalAmount.toLocaleString()}</p>
-                <p className="text-violet-400 text-xs">Settled</p>
-              </div>
-              <div className="w-px h-8 bg-violet-200" />
-              <div className="text-center">
-                <p className="text-violet-700 font-bold text-lg">{players}</p>
-                <p className="text-violet-400 text-xs">Players</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* List */}
