@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, ClockIcon } from 'lucide-react';
 import { getMembers } from '../../lib/adminData';
 import type { Member } from '../../lib/adminData';
 import { displayName } from '../../lib/displayNames';
@@ -41,9 +41,12 @@ export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [settlements, setSettlements] = useState<{ id: number; playerName: string; amount: number; direction: string; notes: string | null; createdAt: string }[]>([]);
 
   useEffect(() => {
     getMembers().then(setMembers);
+    fetch('/api/balance-data').then(r => r.json()).then(d => setSettlements(d.settlements ?? [])).catch(() => {});
     if (mode === 'online') {
       // Online: pure P&L from sheet data
       const map: Record<string, number> = {};
@@ -117,6 +120,10 @@ export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers
           <ArrowLeft className="w-4 h-4 text-gray-700" />
         </button>
         <h1 className="text-gray-900 font-bold text-lg">Record Payment</h1>
+        <button onClick={() => setShowHistory(true)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl shadow-sm text-xs font-medium text-gray-600 border border-gray-100">
+          <ClockIcon className="w-3.5 h-3.5 text-gray-400" />
+          Recorded
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
@@ -243,6 +250,43 @@ export function RecordPayment({ onBack, adminId, mode = 'offline', onlinePlayers
           </div>
         )}
       </div>
+
+      {/* Recorded Payments bottom sheet */}
+      {showHistory && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setShowHistory(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h2 className="text-gray-900 font-bold text-base">Recorded Payments</h2>
+              <button onClick={() => setShowHistory(false)} className="text-gray-400 text-sm font-medium">Close</button>
+            </div>
+            <div className="overflow-y-auto flex-1 divide-y divide-gray-50">
+              {settlements.length === 0 ? (
+                <p className="px-5 py-6 text-sm text-gray-400 text-center">No payments recorded yet</p>
+              ) : settlements.map(s => {
+                const dt = new Date(s.createdAt);
+                const dateStr = dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div key={s.id} className="flex items-center justify-between px-5 py-3.5">
+                    <div>
+                      <p className="text-gray-900 text-sm font-medium">{s.playerName}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {s.direction === 'player_paid_house' ? 'Player → House' : 'House → Player'}
+                        {s.notes ? ` · ${s.notes}` : ''}
+                      </p>
+                      <p className="text-[11px] text-gray-300 mt-0.5">{dateStr} · {timeStr}</p>
+                    </div>
+                    <span className={`font-mono text-sm font-semibold ${s.direction === 'player_paid_house' ? 'text-blue-600' : 'text-violet-600'}`}>
+                      ₹{Number(s.amount).toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
