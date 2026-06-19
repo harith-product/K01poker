@@ -8,8 +8,27 @@ interface RecordPaymentProps {
   adminId: string;
 }
 
+interface PlayerBalance { name: string; balance: number; }
+
+async function fetchBalances(): Promise<PlayerBalance[]> {
+  const res = await fetch('/api/balance-data');
+  const data = await res.json();
+  const map: Record<string, number> = {};
+  for (const { playerName, amount } of data.initialBalances) map[playerName] = (map[playerName] ?? 0) + amount;
+  for (const { playerName, netPnl } of data.sessionPnL) map[playerName] = (map[playerName] ?? 0) + netPnl;
+  for (const s of data.settlements) {
+    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
+    map[s.playerName] = (map[s.playerName] ?? 0) + adj;
+  }
+  return Object.entries(map)
+    .filter(([, b]) => Math.abs(b) >= 0.01)
+    .map(([name, balance]) => ({ name, balance }))
+    .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
+}
+
 export function RecordPayment({ onBack, adminId }: RecordPaymentProps) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [balances, setBalances] = useState<PlayerBalance[] | null>(null);
   const [playerName, setPlayerName] = useState('');
   const [search, setSearch] = useState('');
   const [amount, setAmount] = useState('');
@@ -19,7 +38,10 @@ export function RecordPayment({ onBack, adminId }: RecordPaymentProps) {
   const [done, setDone] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => { getMembers().then(setMembers); }, []);
+  useEffect(() => {
+    getMembers().then(setMembers);
+    fetchBalances().then(setBalances).catch(() => setBalances([]));
+  }, []);
 
   const filtered = members.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -156,6 +178,35 @@ export function RecordPayment({ onBack, adminId }: RecordPaymentProps) {
       >
         {saving ? 'Recording…' : 'Record Payment'}
       </button>
+
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <h2 className="text-gray-900 text-sm font-semibold">Current Balances</h2>
+        </div>
+        {balances === null ? (
+          <div className="px-4 py-4 flex justify-center">
+            <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : balances.length === 0 ? (
+          <p className="px-4 py-3 text-sm text-gray-400">No balance data</p>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {balances.map(p => (
+              <div key={p.name} className="flex items-center justify-between px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${p.balance > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {p.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-gray-800 text-sm">{p.name}</span>
+                </div>
+                <span className={`font-mono text-sm font-semibold ${p.balance > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {p.balance > 0 ? '+' : ''}₹{Math.round(Math.abs(p.balance)).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
