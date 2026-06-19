@@ -260,7 +260,7 @@ function MainApp({ data }: { data: AppData }) {
             {activeTab === 'home' && <HomeTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} period={period} />}
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={handlePlayerClick} />}
-            {activeTab === 'balance' && <BalanceTab onlinePlayers={data.onlinePlayers} />}
+            {activeTab === 'balance' && <BalanceTab onlinePlayers={data.onlinePlayers} mode={mode} />}
             {activeTab === 'admin' && <AdminTab recentSessionsPlayers={
               [...(data.offlineSessions.length ? data.offlineSessions : data.onlineSessions)]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
