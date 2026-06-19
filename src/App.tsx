@@ -145,7 +145,7 @@ function mergePlayers(offline: Player[], online: Player[]): Player[] {
 }
 
 function MainApp({ data }: { data: AppData }) {
-  const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [activeTab, setActiveTab] = useState<TabType>(() => (localStorage.getItem('activeTab') as TabType) ?? 'home');
   const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'offline');
   const [modeOpen, setModeOpen] = useState(false);
   const [period, setPeriod] = useState<TimePeriod>('overall');
@@ -170,6 +170,7 @@ function MainApp({ data }: { data: AppData }) {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
+    localStorage.setItem('activeTab', tab);
     mainRef.current?.scrollTo({ top: 0 });
   };
 
