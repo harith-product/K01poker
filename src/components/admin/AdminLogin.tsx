@@ -5,7 +5,7 @@ const VALID_IDS = ['Ankit', 'Harith'];
 const KEY = '091125';
 
 interface AdminLoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (id: string) => void;
 }
 
 export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
@@ -23,7 +23,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       setError('Incorrect key.');
       return;
     }
-    onLoginSuccess();
+    onLoginSuccess(matchedId);
   }
 
   return (
