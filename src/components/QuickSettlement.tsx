@@ -7,16 +7,24 @@ interface Props {
 }
 
 function Avatar({ name, color }: { name: string; color: 'green' | 'red' }) {
-  const bg = color === 'green' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+  const isHouse = name === 'House';
+  const bg = isHouse ? 'bg-violet-100 text-violet-700' : color === 'green' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
   return (
     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${bg}`}>
-      {name.charAt(0).toUpperCase()}
+      {isHouse ? '🏠' : name.charAt(0).toUpperCase()}
     </div>
   );
 }
 
 export function QuickSettlement({ balances, onClose }: Props) {
-  const transfers = computeSettlements(balances);
+  // Add House as a creditor for the rake gap (total debts > total credits in offline mode)
+  const totalCredits = balances.filter(b => b.balance > 0).reduce((s, b) => s + b.balance, 0);
+  const totalDebts = balances.filter(b => b.balance < 0).reduce((s, b) => s + Math.abs(b.balance), 0);
+  const rakeGap = Math.round(totalDebts - totalCredits);
+  const balancesWithHouse = rakeGap >= 1
+    ? [...balances, { name: 'House', balance: rakeGap }]
+    : balances;
+  const transfers = computeSettlements(balancesWithHouse);
 
   // Group by payer
   const groups: Record<string, Transfer[]> = {};
