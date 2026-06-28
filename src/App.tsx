@@ -158,11 +158,11 @@ function MainApp({ data }: { data: AppData }) {
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  const combinedPlayers = mergePlayers(data.offlinePlayers, onlinePlayers);
-  const combinedSessions = [...data.offlineSessions, ...onlineSessions];
-
   const onlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
   const onlineSessions = gameType === 'tournament' ? data.tournamentSessions : data.onlineSessions;
+
+  const combinedPlayers = mergePlayers(data.offlinePlayers, onlinePlayers);
+  const combinedSessions = [...data.offlineSessions, ...onlineSessions];
 
   const players = mode === 'online' ? onlinePlayers : mode === 'offline' ? data.offlinePlayers : combinedPlayers;
   const sessions = mode === 'online' ? onlineSessions : mode === 'offline' ? data.offlineSessions : combinedSessions;
