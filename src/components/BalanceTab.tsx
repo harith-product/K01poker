@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { Player } from '../lib/types';
 import { displayName } from '../lib/displayNames';
 import type { GameMode } from '../App';
-import { QuickSettlement } from './QuickSettlement';
 
 interface Settlement {
   id: number;
@@ -81,7 +80,6 @@ function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owe
 export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
   const [data, setData] = useState<BalanceDataResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showSettlement, setShowSettlement] = useState(false);
 
   useEffect(() => {
     fetch('/api/balance-data')
@@ -155,17 +153,7 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
 
   return (
     <div className="max-w-lg mx-auto px-3 pt-3 pb-8 space-y-3">
-      {showSettlement && <QuickSettlement balances={balances} onClose={() => setShowSettlement(false)} />}
-
-      <div className="flex items-center justify-between px-1">
-        <h1 className="text-gray-900 text-lg font-bold">Balance</h1>
-        <button
-          onClick={() => setShowSettlement(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl shadow-sm border border-gray-100 text-xs font-semibold text-violet-600"
-        >
-          ⚡ Quick Settlement
-        </button>
-      </div>
+      <h1 className="text-gray-900 text-lg font-bold px-1">Balance</h1>
 
       {/* Rake card — offline/combined only */}
       {mode !== 'online' && (
