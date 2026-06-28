@@ -208,7 +208,7 @@ async function parseTransposedSheetCSV(url: string, source?: 'online' | 'offline
 }
 
 export async function fetchOfflineSheetData() {
-  return fetchWithCache('cache_offline', () => parseTransposedSheetCSV(OFFLINE_CSV_URL, 'offline'));
+  return fetchWithCache('cache_offline', () => parseSheetCSV(OFFLINE_CSV_URL, s => (s === '1' ? '' : s), 'offline'));
 }
 
 async function fetchBalanceRaw(): Promise<BalanceData> {
