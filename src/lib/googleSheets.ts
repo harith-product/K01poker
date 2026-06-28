@@ -137,7 +137,7 @@ async function fetchWithCache(key: string, fetcher: () => Promise<SheetResult>):
     return cached.data;
   }
   const fresh = await fetcher();
-  writeCache(key, fresh);
+  if (fresh.players.length > 0) writeCache(key, fresh);
   return fresh;
 }
 
@@ -196,7 +196,7 @@ async function parseTransposedSheetCSV(url: string, source?: 'online' | 'offline
 }
 
 export async function fetchTournamentData() {
-  return fetchWithCache('cache_tournament', () => parseTransposedSheetCSV(TOURNAMENT_CSV_URL, 'online'));
+  return fetchWithCache('cache_tournament_v2', () => parseTransposedSheetCSV(TOURNAMENT_CSV_URL, 'online'));
 }
 
 export async function fetchOfflineSheetData() {
