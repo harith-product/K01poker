@@ -7,15 +7,18 @@ import { GamesTab } from './components/GamesTab';
 import { BalanceTab } from './components/BalanceTab';
 import { AdminTab } from './components/AdminTab';
 import { PlayerDetailSheet } from './components/PlayerDetailSheet';
-import { fetchSheetData, fetchOfflineSheetData, fetchBalanceData } from './lib/googleSheets';
+import { fetchSheetData, fetchOfflineSheetData, fetchBalanceData, fetchTournamentData } from './lib/googleSheets';
 import type { Player, GameSession, BalanceData } from './lib/types';
 import { displayName } from './lib/displayNames';
 
 export type GameMode = 'online' | 'offline' | 'combined';
+export type GameType = 'cash' | 'tournament';
 
 interface AppData {
   onlinePlayers: Player[];
   onlineSessions: GameSession[];
+  tournamentPlayers: Player[];
+  tournamentSessions: GameSession[];
   offlinePlayers: Player[];
   offlineSessions: GameSession[];
   balance: BalanceData;
@@ -26,6 +29,8 @@ interface AppData {
 function useAppData(): AppData {
   const [onlinePlayers, setOnlinePlayers] = useState<Player[]>([]);
   const [onlineSessions, setOnlineSessions] = useState<GameSession[]>([]);
+  const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
+  const [tournamentSessions, setTournamentSessions] = useState<GameSession[]>([]);
   const [offlinePlayers, setOfflinePlayers] = useState<Player[]>([]);
   const [offlineSessions, setOfflineSessions] = useState<GameSession[]>([]);
   const [balance, setBalance] = useState<BalanceData>({ owesHouse: [], houseOwes: [] });
@@ -33,17 +38,16 @@ function useAppData(): AppData {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load each source independently — offline shows as soon as it's ready
     fetchOfflineSheetData()
-      .then(offline => {
-        setOfflinePlayers(offline.players);
-        setOfflineSessions(offline.sessions);
-        setLoading(false);
-      })
+      .then(offline => { setOfflinePlayers(offline.players); setOfflineSessions(offline.sessions); setLoading(false); })
       .catch(err => { setError(err.message); setLoading(false); });
 
     fetchSheetData()
       .then(online => { setOnlinePlayers(online.players); setOnlineSessions(online.sessions); })
+      .catch(() => {});
+
+    fetchTournamentData()
+      .then(t => { setTournamentPlayers(t.players); setTournamentSessions(t.sessions); })
       .catch(() => {});
 
     fetchBalanceData()
@@ -51,7 +55,7 @@ function useAppData(): AppData {
       .catch(() => {});
   }, []);
 
-  return { onlinePlayers, onlineSessions, offlinePlayers, offlineSessions, balance, loading, error };
+  return { onlinePlayers, onlineSessions, tournamentPlayers, tournamentSessions, offlinePlayers, offlineSessions, balance, loading, error };
 }
 
 function PlayerPage({ data }: { data: AppData }) {
@@ -147,6 +151,7 @@ function mergePlayers(offline: Player[], online: Player[]): Player[] {
 function MainApp({ data }: { data: AppData }) {
   const [activeTab, setActiveTab] = useState<TabType>(() => (localStorage.getItem('activeTab') as TabType) ?? 'home');
   const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'offline');
+  const [gameType, setGameType] = useState<GameType>(() => (localStorage.getItem('gameType') as GameType) ?? 'cash');
   const [modeOpen, setModeOpen] = useState(false);
   const [period, setPeriod] = useState<TimePeriod>('overall');
   const [periodOpen, setPeriodOpen] = useState(false);
@@ -156,8 +161,16 @@ function MainApp({ data }: { data: AppData }) {
   const combinedPlayers = mergePlayers(data.offlinePlayers, data.onlinePlayers);
   const combinedSessions = [...data.offlineSessions, ...data.onlineSessions];
 
-  const players = mode === 'online' ? data.onlinePlayers : mode === 'offline' ? data.offlinePlayers : combinedPlayers;
-  const sessions = mode === 'online' ? data.onlineSessions : mode === 'offline' ? data.offlineSessions : combinedSessions;
+  const onlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
+  const onlineSessions = gameType === 'tournament' ? data.tournamentSessions : data.onlineSessions;
+
+  const players = mode === 'online' ? onlinePlayers : mode === 'offline' ? data.offlinePlayers : combinedPlayers;
+  const sessions = mode === 'online' ? onlineSessions : mode === 'offline' ? data.offlineSessions : combinedSessions;
+
+  const handleGameTypeChange = (t: GameType) => {
+    setGameType(t);
+    localStorage.setItem('gameType', t);
+  };
 
   // Restore scroll position when returning from player page
   useEffect(() => {
@@ -217,6 +230,23 @@ function MainApp({ data }: { data: AppData }) {
                 </>
               )}
             </div>
+            {/* Cash / Tournament toggle — only when Online */}
+            {mode === 'online' && (
+              <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-0.5">
+                <button
+                  onClick={() => handleGameTypeChange('cash')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'cash' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
+                >
+                  Cash
+                </button>
+                <button
+                  onClick={() => handleGameTypeChange('tournament')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'tournament' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
+                >
+                  Tourn.
+                </button>
+              </div>
+            )}
             {activeTab === 'home' && (
               <div className="relative ml-auto">
                 <button

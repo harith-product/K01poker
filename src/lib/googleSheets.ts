@@ -5,6 +5,7 @@ import type { Player, GameSession, BalanceData } from './types';
 const SHEET_CSV_URL = import.meta.env.VITE_SHEET_CSV_URL || '';
 const BALANCE_CSV_URL = import.meta.env.VITE_BALANCE_CSV_URL || '';
 const OFFLINE_CSV_URL = import.meta.env.VITE_OFFLINE_CSV_URL || '';
+const TOURNAMENT_CSV_URL = import.meta.env.VITE_TOURNAMENT_CSV_URL || '';
 
 const MONTHS: Record<string, string> = {
   Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
@@ -142,6 +143,60 @@ async function fetchWithCache(key: string, fetcher: () => Promise<SheetResult>):
 
 export async function fetchSheetData() {
   return fetchWithCache('cache_online', () => parseSheetCSV(SHEET_CSV_URL, undefined, 'online'));
+}
+
+// Transposed format: row 0 = headers (Player, date1, date2...), rows 1+ = players
+async function parseTransposedSheetCSV(url: string, source?: 'online' | 'offline'): Promise<{ players: Player[]; sessions: GameSession[] }> {
+  if (!url) return { players: [], sessions: [] };
+  const resp = await fetch(url);
+  const text = await resp.text();
+  const rows = text.split('\n').map(parseCSVRow);
+  if (rows.length < 2) return { players: [], sessions: [] };
+
+  const sessionHeaders = rows[0].slice(1);
+  const sessionMeta = sessionHeaders.map(h => {
+    const m = h.trim().match(/^(\d{1,2}-[A-Za-z]{3})\s*(.*)$/);
+    return { date: m ? parseDate(m[1]) : h.trim(), session: m ? m[2].trim() : '' };
+  });
+
+  const sessions: GameSession[] = sessionMeta.map(s => ({ ...s, players: {} }));
+  const playerResultsMap: Record<string, { date: string; session: string; amount: number; source?: 'online' | 'offline' }[]> = {};
+  const playerNames: string[] = [];
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const playerName = row[0]?.trim();
+    if (!playerName) continue;
+    playerNames.push(playerName);
+    playerResultsMap[playerName] = [];
+    sessionHeaders.forEach((_, si) => {
+      const amount = parseAmount(row[si + 1] ?? '');
+      sessions[si].players[playerName] = amount;
+      if (amount !== 0) {
+        playerResultsMap[playerName].push({ date: sessionMeta[si].date, session: sessionMeta[si].session, amount, ...(source ? { source } : {}) });
+      }
+    });
+  }
+
+  const players: Player[] = playerNames.map(name => {
+    const results = playerResultsMap[name];
+    const totalWinnings = results.reduce((s, r) => s + r.amount, 0);
+    const gamesPlayed = results.length;
+    const amounts = results.map(r => r.amount);
+    return {
+      id: name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      name, results, totalWinnings, gamesPlayed,
+      avgPerGame: gamesPlayed > 0 ? Math.round(totalWinnings / gamesPlayed) : 0,
+      bestResult: amounts.length > 0 ? Math.max(...amounts) : 0,
+      worstResult: amounts.length > 0 ? Math.min(...amounts) : 0,
+    };
+  }).filter(p => p.gamesPlayed > 0);
+
+  return { players, sessions: sessions.filter(s => Object.values(s.players).some(v => v !== 0)) };
+}
+
+export async function fetchTournamentData() {
+  return fetchWithCache('cache_tournament', () => parseTransposedSheetCSV(TOURNAMENT_CSV_URL, 'online'));
 }
 
 export async function fetchOfflineSheetData() {
