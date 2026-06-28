@@ -5,7 +5,7 @@ import type { Player, GameSession, BalanceData } from './types';
 const SHEET_CSV_URL = import.meta.env.VITE_SHEET_CSV_URL || '';
 const BALANCE_CSV_URL = import.meta.env.VITE_BALANCE_CSV_URL || '';
 const OFFLINE_CSV_URL = import.meta.env.VITE_OFFLINE_CSV_URL || '';
-const TOURNAMENT_CSV_URL = import.meta.env.VITE_TOURNAMENT_CSV_URL || '';
+const TOURNAMENT_CSV_URL = import.meta.env.VITE_TOURNAMENT_CSV_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRH49eJ069HcnDBMlWKTpnnVBJykUINISs34U9a5DDtv7BwvmCK4UasLbbR-UU3tgHQIz6X24nf9xc8/pub?gid=1949894340&single=true&output=csv';
 
 const MONTHS: Record<string, string> = {
   Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
