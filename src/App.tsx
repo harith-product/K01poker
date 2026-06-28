@@ -158,8 +158,8 @@ function MainApp({ data }: { data: AppData }) {
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  const combinedPlayers = mergePlayers(data.offlinePlayers, data.onlinePlayers);
-  const combinedSessions = [...data.offlineSessions, ...data.onlineSessions];
+  const combinedPlayers = mergePlayers(data.offlinePlayers, onlinePlayers);
+  const combinedSessions = [...data.offlineSessions, ...onlineSessions];
 
   const onlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
   const onlineSessions = gameType === 'tournament' ? data.tournamentSessions : data.onlineSessions;
@@ -230,8 +230,8 @@ function MainApp({ data }: { data: AppData }) {
                 </>
               )}
             </div>
-            {/* Cash / Tournament toggle — only when Online */}
-            {mode === 'online' && (
+            {/* Cash / Tournament toggle — when Online or Combined */}
+            {(mode === 'online' || mode === 'combined') && (
               <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-0.5">
                 <button
                   onClick={() => handleGameTypeChange('cash')}
