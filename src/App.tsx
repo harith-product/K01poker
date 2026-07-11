@@ -63,7 +63,9 @@ function PlayerPage({ data }: { data: AppData }) {
   const navigate = useNavigate();
 
   const mode = (localStorage.getItem('gameMode') as GameMode) ?? 'offline';
-  const combined = mergePlayers(data.offlinePlayers, data.onlinePlayers);
+  const gameType = (localStorage.getItem('gameType') as GameType) ?? 'cash';
+  const activeonlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
+  const combined = mergePlayers(data.offlinePlayers, activeonlinePlayers);
 
   let players: Player[];
   let player: Player | null;
@@ -72,12 +74,11 @@ function PlayerPage({ data }: { data: AppData }) {
     players = combined;
     player = combined.find(p => p.id === id) ?? null;
   } else {
-    const source = mode === 'online' ? data.onlinePlayers : data.offlinePlayers;
+    const source = mode === 'online' ? activeonlinePlayers : data.offlinePlayers;
     players = source;
     player = source.find(p => p.id === id) ?? null;
-    // fallback: id may be from the other source
     if (!player) {
-      const other = mode === 'online' ? data.offlinePlayers : data.onlinePlayers;
+      const other = mode === 'online' ? data.offlinePlayers : activeonlinePlayers;
       player = other.find(p => p.id === id) ?? null;
       if (player) players = other;
     }
