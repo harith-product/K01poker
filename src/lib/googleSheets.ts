@@ -196,7 +196,7 @@ async function parseTransposedSheetCSV(url: string, source?: 'online' | 'offline
 }
 
 export async function fetchTournamentData() {
-  return fetchWithCache('cache_tournament_v2', () => parseTransposedSheetCSV(TOURNAMENT_CSV_URL, 'online'));
+  return fetchWithCache('cache_tournament_v3', () => parseTransposedSheetCSV(TOURNAMENT_CSV_URL, 'online'));
 }
 
 export async function fetchOfflineSheetData() {

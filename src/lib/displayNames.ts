@@ -22,6 +22,9 @@ const NAME_MAP: Record<string, string> = {
   'BluffMaster2301': 'Kshitij',
   'KS@cypher': 'Kavish',
   'Uchiha Aman': 'Aman',
+  'Ghost@KS': 'Kavish',
+  'D.J Saket': 'Saket',
+  'FT_SSS': 'FT_SSS',
 };
 
 export function displayName(name: string): string {
