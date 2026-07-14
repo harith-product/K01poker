@@ -5,14 +5,15 @@ export type TabType = 'home' | 'leaderboard' | 'games' | 'balance' | 'admin';
 interface NavigationProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+  mode?: string;
 }
 
-export function Navigation({ activeTab, setActiveTab }: NavigationProps) {
+export function Navigation({ activeTab, setActiveTab, mode }: NavigationProps) {
   const tabs = [
     { id: 'home' as TabType, label: 'Home', Icon: Home },
     { id: 'leaderboard' as TabType, label: 'Stats', Icon: BarChart2 },
     { id: 'games' as TabType, label: 'Games', Icon: Calendar },
-    { id: 'balance' as TabType, label: 'Balance', Icon: Wallet },
+    ...(mode !== 'offline' ? [{ id: 'balance' as TabType, label: 'Balance', Icon: Wallet }] : []),
     { id: 'admin' as TabType, label: 'Admin', Icon: Shield },
   ];
 
