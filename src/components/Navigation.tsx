@@ -8,7 +8,7 @@ interface NavigationProps {
   mode?: string;
 }
 
-export function Navigation({ activeTab, setActiveTab, mode }: NavigationProps) {
+export function Navigation({ activeTab, setActiveTab }: NavigationProps) {
   const tabs = [
     { id: 'home' as TabType, label: 'Home', Icon: Home },
     { id: 'leaderboard' as TabType, label: 'Stats', Icon: BarChart2 },
