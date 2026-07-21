@@ -191,9 +191,6 @@ function MainApp({ data }: { data: AppData }) {
   const handleModeChange = (m: GameMode) => {
     setMode(m);
     localStorage.setItem('gameMode', m);
-    if (m === 'offline' && activeTab === 'balance') {
-      handleTabChange('home');
-    }
     mainRef.current?.scrollTo({ top: 0 });
   };
 
