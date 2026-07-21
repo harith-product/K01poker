@@ -113,12 +113,8 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
     onlineBalanceMap[s.playerName] = (onlineBalanceMap[s.playerName] ?? 0) + adj;
   }
 
-  // --- Offline balance: starts at 0 for everyone, only settlements adjust ---
+  // --- Offline balance: zeroed out — only new settlements will move balances ---
   const offlineBalanceMap: Record<string, number> = {};
-  for (const s of data.settlements) {
-    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
-    offlineBalanceMap[s.playerName] = (offlineBalanceMap[s.playerName] ?? 0) + adj;
-  }
 
   // --- Combined: merge both by display name ---
   const combinedBalanceMap: Record<string, number> = { ...offlineBalanceMap };
