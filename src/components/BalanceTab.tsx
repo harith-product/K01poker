@@ -113,13 +113,11 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
     onlineBalanceMap[s.playerName] = (onlineBalanceMap[s.playerName] ?? 0) + adj;
   }
 
-  // --- Offline balance: snapshot + new DB sessions (10% rake) + settlements ---
+  // --- Offline balance: Balances sheet snapshot + settlements ---
+  // sessionPnL is NOT added here — the Balances sheet is the running total maintained manually
   const offlineBalanceMap: Record<string, number> = {};
   for (const { playerName, amount } of data.initialBalances) {
     offlineBalanceMap[playerName] = (offlineBalanceMap[playerName] ?? 0) + amount;
-  }
-  for (const { playerName, netPnl } of data.sessionPnL) {
-    offlineBalanceMap[playerName] = (offlineBalanceMap[playerName] ?? 0) + netPnl;
   }
   for (const s of data.settlements) {
     const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
