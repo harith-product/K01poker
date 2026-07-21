@@ -1,3 +1,18 @@
+export type GameType = 'online' | 'offline' | 'tournament' | 'offline_tournament';
+
+export function gameTypeLabel(gameType: GameType): string {
+  switch (gameType) {
+    case 'offline': return 'Offline Cash';
+    case 'online': return 'Online Cash';
+    case 'tournament': return 'Online Tournament';
+    case 'offline_tournament': return 'Offline Tournament';
+  }
+}
+
+export function isChipPnlSession(gameType: GameType): boolean {
+  return gameType === 'online' || gameType === 'tournament' || gameType === 'offline_tournament';
+}
+
 export interface Member {
   id: string;
   name: string;
@@ -7,11 +22,16 @@ export interface SessionMember {
   memberId: string;
   buyIns: number;
   chipsLeft: number | null;
+  chipPnl?: number | null;
+  grossPnl?: number | null;
+  balancePnl?: number | null;
 }
 
 export interface Session {
   id: string;
   date: string;
+  gameType: GameType;
+  sessionName: string;
   buyInAmount: number;
   chipRatio: number;
   isCustomRatio: boolean;
@@ -19,10 +39,13 @@ export interface Session {
   customChipAmount?: number;
   members: SessionMember[];
   isActive: boolean;
+  rakeAmount?: number;
 }
 
-export const ADMIN_PHONE = '9738659221';
-export const ADMIN_OTP = '091125';
+export interface CompleteSessionResult {
+  members: { memberId: string; memberName: string; grossPnl: number; balancePnl: number }[];
+  rake: number;
+}
 
 const BASE = '/api';
 
@@ -43,26 +66,20 @@ export async function getMembers(): Promise<Member[]> {
 }
 
 export async function addMember(name: string): Promise<Member> {
-  return apiFetch<Member>('/members', {
-    method: 'POST',
-    body: JSON.stringify({ name }),
-  });
+  return apiFetch<Member>('/members', { method: 'POST', body: JSON.stringify({ name }) });
 }
 
 export async function updateMemberName(id: string, name: string): Promise<void> {
-  await apiFetch('/members', {
-    method: 'PATCH',
-    body: JSON.stringify({ id, name }),
-  });
+  await apiFetch('/members', { method: 'PATCH', body: JSON.stringify({ id, name }) });
 }
 
 export async function getSessions(): Promise<Session[]> {
   return apiFetch<Session[]>('/sessions');
 }
 
-export async function getActiveSession(): Promise<Session | undefined> {
+export async function getActiveSessions(): Promise<Session[]> {
   const sessions = await getSessions();
-  return sessions.find(s => s.isActive);
+  return sessions.filter(s => s.isActive);
 }
 
 export async function createSession(session: Omit<Session, 'id'>): Promise<Session> {
@@ -73,8 +90,8 @@ export async function createSession(session: Omit<Session, 'id'>): Promise<Sessi
   return { ...session, id };
 }
 
-async function sessionAction(id: string, action: string, extra?: object): Promise<void> {
-  await apiFetch('/sessions', {
+async function sessionAction<T = void>(id: string, action: string, extra?: object): Promise<T> {
+  return apiFetch<T>('/sessions', {
     method: 'PATCH',
     body: JSON.stringify({ id, action, ...extra }),
   });
@@ -98,9 +115,16 @@ export async function resumeMemberSession(sessionId: string, memberId: string): 
 
 export async function endSessionForAll(
   sessionId: string,
-  memberChips: { memberId: string; chipsLeft: number }[]
-): Promise<void> {
-  await sessionAction(sessionId, 'end', { memberChips });
+  memberChips: { memberId: string; chipsLeft: number }[],
+): Promise<CompleteSessionResult> {
+  return sessionAction<CompleteSessionResult>(sessionId, 'end', { memberChips });
+}
+
+export async function endOnlineSession(
+  sessionId: string,
+  memberChipPnl: { memberId: string; chipPnl: number }[],
+): Promise<CompleteSessionResult> {
+  return sessionAction<CompleteSessionResult>(sessionId, 'endOnline', { memberChipPnl });
 }
 
 export async function addMemberToSession(sessionId: string, memberId: string): Promise<void> {
@@ -114,4 +138,11 @@ export async function cancelSession(sessionId: string): Promise<void> {
 export function fmtDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+export function chipToMoneyRate(session: Session): number {
+  if (session.isCustomRatio && session.customCashAmount && session.customChipAmount) {
+    return session.customCashAmount / session.customChipAmount;
+  }
+  return 1 / session.chipRatio;
 }

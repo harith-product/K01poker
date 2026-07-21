@@ -1,34 +1,14 @@
 import { useState, useEffect } from 'react';
-import type { Player } from '../lib/types';
-import { displayName } from '../lib/displayNames';
-import type { GameMode } from '../App';
+import {
+  type BalanceDataResponse,
+  balanceMapToList,
+  getBalanceMap,
+} from '../lib/balance';
 
-interface Settlement {
-  id: number;
-  playerName: string;
-  amount: number;
-  direction: string;
-  notes: string | null;
-  recordedBy: string | null;
-  createdAt: string;
-}
-
-interface BalanceDataResponse {
-  initialBalances: { playerName: string; amount: number }[];
-  sessionPnL: { playerName: string; netPnl: number; rake: number }[];
-  settlements: Settlement[];
-  totalRakeInitial: number;
-  totalRakeNew: number;
-}
-
-interface PlayerBalance {
-  name: string;
-  balance: number;
-}
+interface PlayerBalance { name: string; balance: number; }
 
 interface BalanceTabProps {
-  onlinePlayers: Player[];
-  mode: GameMode;
+  refreshKey?: number;
 }
 
 function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owesHouse: PlayerBalance[] }) {
@@ -42,9 +22,7 @@ function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owe
           {houseOwes.map(p => (
             <div key={p.name} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 text-xs font-bold">
-                  {p.name.charAt(0).toUpperCase()}
-                </div>
+                <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 text-xs font-bold">{p.name.charAt(0)}</div>
                 <span className="text-gray-900 text-sm font-medium">{p.name}</span>
               </div>
               <span className="font-mono text-green-600 font-semibold text-sm">+₹{p.balance.toLocaleString()}</span>
@@ -53,7 +31,6 @@ function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owe
           {houseOwes.length === 0 && <p className="px-4 py-3 text-gray-400 text-sm">No entries</p>}
         </div>
       </div>
-
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100">
           <h2 className="text-gray-900 text-sm font-semibold">💸 Players Owe House</h2>
@@ -62,9 +39,7 @@ function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owe
           {owesHouse.map(p => (
             <div key={p.name} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-red-700 text-xs font-bold">
-                  {p.name.charAt(0).toUpperCase()}
-                </div>
+                <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-red-700 text-xs font-bold">{p.name.charAt(0)}</div>
                 <span className="text-gray-900 text-sm font-medium">{p.name}</span>
               </div>
               <span className="font-mono text-red-600 font-semibold text-sm">₹{Math.abs(p.balance).toLocaleString()}</span>
@@ -77,16 +52,17 @@ function BalanceList({ houseOwes, owesHouse }: { houseOwes: PlayerBalance[]; owe
   );
 }
 
-export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
+export function BalanceTab({ refreshKey = 0 }: BalanceTabProps) {
   const [data, setData] = useState<BalanceDataResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch('/api/balance-data')
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   if (loading) return (
     <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-400">
@@ -94,73 +70,33 @@ export function BalanceTab({ onlinePlayers, mode }: BalanceTabProps) {
       Loading balance…
     </div>
   );
+  if (!data) return <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-400">Failed to load balance</div>;
 
-  if (!data) return (
-    <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-400">Failed to load balance</div>
-  );
-
-  // --- Online balance: pure P&L from online sheet, display names applied ---
-  const onlineBalanceMap: Record<string, number> = {};
-  for (const player of onlinePlayers) {
-    if (player.totalWinnings !== 0) {
-      const name = displayName(player.name);
-      onlineBalanceMap[name] = (onlineBalanceMap[name] ?? 0) + player.totalWinnings;
-    }
-  }
-  // Settlements apply to all modes — they're real money movements
-  for (const s of data.settlements) {
-    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
-    onlineBalanceMap[s.playerName] = (onlineBalanceMap[s.playerName] ?? 0) + adj;
-  }
-
-  // --- Offline balance: zeroed out — only new settlements will move balances ---
-  const offlineBalanceMap: Record<string, number> = {};
-
-  // --- Combined: merge both by display name ---
-  const combinedBalanceMap: Record<string, number> = { ...offlineBalanceMap };
-  for (const [name, amount] of Object.entries(onlineBalanceMap)) {
-    combinedBalanceMap[name] = (combinedBalanceMap[name] ?? 0) + amount;
-  }
-  // Settlements already counted in both maps, remove double-count in combined
-  for (const s of data.settlements) {
-    const adj = s.direction === 'player_paid_house' ? s.amount : -s.amount;
-    combinedBalanceMap[s.playerName] = (combinedBalanceMap[s.playerName] ?? 0) - adj;
-  }
-
-  const sourceMap =
-    mode === 'online' ? onlineBalanceMap
-    : mode === 'offline' ? offlineBalanceMap
-    : combinedBalanceMap;
-
-  const balances: PlayerBalance[] = Object.entries(sourceMap)
-    .filter(([, b]) => Math.abs(b) >= 0.01)
-    .map(([name, balance]) => ({ name, balance }));
-
+  const balances = balanceMapToList(getBalanceMap(data));
   const houseOwes = balances.filter(p => p.balance > 0).sort((a, b) => b.balance - a.balance);
   const owesHouse = balances.filter(p => p.balance < 0).sort((a, b) => a.balance - b.balance);
-
-  const totalRake = mode === 'online' ? 0 : data.totalRakeInitial + data.totalRakeNew;
 
   return (
     <div className="max-w-lg mx-auto px-3 pt-3 pb-8 space-y-3">
       <h1 className="text-gray-900 text-lg font-bold px-1">Balance</h1>
 
-      {/* Rake card — offline/combined only */}
-      {mode !== 'online' && (
-        <div className="bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl p-4 shadow-md">
-          <p className="text-violet-100 text-xs font-medium mb-1">🏠 House Rake Collected</p>
-          <p className="text-white text-2xl font-bold font-mono">₹{totalRake.toLocaleString()}</p>
-          {data.totalRakeNew > 0 && (
-            <p className="text-violet-200 text-xs mt-1">+₹{data.totalRakeNew.toLocaleString()} from new sessions</p>
-          )}
+      <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center flex-shrink-0 text-white text-lg">
+            ∑
+          </div>
+          <div>
+            <p className="text-sm font-bold text-violet-900">Net balance — all game types</p>
+            <p className="text-xs text-violet-700/90 mt-1 leading-relaxed">
+              One combined total per player across offline cash, online cash, offline tournaments, and online tournaments.
+              Leaderboard & stats still split by mode above.
+            </p>
+          </div>
         </div>
-      )}
-
+      </div>
 
       <BalanceList houseOwes={houseOwes} owesHouse={owesHouse} />
-
-      {/* Settlements — offline/combined only */}
-      {mode !== 'online' && data.settlements.length > 0 && (
+      {data.settlements.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="text-gray-900 text-sm font-semibold">✅ Recent Settlements</h2>
