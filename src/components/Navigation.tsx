@@ -5,7 +5,6 @@ export type TabType = 'home' | 'leaderboard' | 'games' | 'balance' | 'admin';
 interface NavigationProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  mode?: string;
 }
 
 export function Navigation({ activeTab, setActiveTab }: NavigationProps) {

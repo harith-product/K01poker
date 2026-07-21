@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, initSchema } from './_db.js';
+import { sql, initSchema } from './_db';
 
 const INITIAL_MEMBERS = [
   { id: 'm1', name: 'Ankur' },

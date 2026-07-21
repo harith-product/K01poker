@@ -1,5 +1,23 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, initSchema } from './_db.js';
+import { sql, initSchema } from './_db';
+import { completeOfflineSession, completeOnlineSession } from './_completeSession';
+
+function mapSession(s: Record<string, unknown>) {
+  return {
+    id: s.id,
+    date: s.date,
+    gameType: s.game_type || 'offline',
+    sessionName: s.session_name || 'Main',
+    buyInAmount: Number(s.buy_in_amount),
+    chipRatio: Number(s.chip_ratio),
+    isCustomRatio: s.is_custom_ratio,
+    customCashAmount: s.custom_cash_amount ? Number(s.custom_cash_amount) : undefined,
+    customChipAmount: s.custom_chip_amount ? Number(s.custom_chip_amount) : undefined,
+    isActive: s.is_active,
+    rakeAmount: s.rake_amount != null ? Number(s.rake_amount) : undefined,
+    members: s.members,
+  };
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await initSchema();
@@ -12,7 +30,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             json_build_object(
               'memberId', sm.member_id,
               'buyIns', sm.buy_ins,
-              'chipsLeft', sm.chips_left
+              'chipsLeft', sm.chips_left,
+              'chipPnl', sm.chip_pnl,
+              'grossPnl', sm.gross_pnl,
+              'balancePnl', sm.balance_pnl
             )
           ) FILTER (WHERE sm.member_id IS NOT NULL),
           '[]'
@@ -22,27 +43,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       GROUP BY s.id
       ORDER BY s.created_at DESC
     `;
-    const mapped = sessions.map(s => ({
-      id: s.id,
-      date: s.date,
-      buyInAmount: Number(s.buy_in_amount),
-      chipRatio: Number(s.chip_ratio),
-      isCustomRatio: s.is_custom_ratio,
-      customCashAmount: s.custom_cash_amount ? Number(s.custom_cash_amount) : undefined,
-      customChipAmount: s.custom_chip_amount ? Number(s.custom_chip_amount) : undefined,
-      isActive: s.is_active,
-      members: s.members,
-    }));
-    return res.status(200).json(mapped);
+    return res.status(200).json(sessions.map(mapSession));
   }
 
   if (req.method === 'POST') {
-    const { date, buyInAmount, chipRatio, isCustomRatio, customCashAmount, customChipAmount, members } = req.body;
-    if (!date || !buyInAmount || !chipRatio) return res.status(400).json({ error: 'missing fields' });
+    const {
+      date, buyInAmount, chipRatio, isCustomRatio, customCashAmount, customChipAmount,
+      members, gameType, sessionName,
+    } = req.body;
+    if (!date || buyInAmount == null || chipRatio == null) {
+      return res.status(400).json({ error: 'missing fields' });
+    }
+    const type =
+      gameType === 'offline_tournament' ? 'offline_tournament'
+      : gameType === 'tournament' ? 'tournament'
+      : gameType === 'online' ? 'online'
+      : 'offline';
     const id = `s${Date.now()}`;
     await sql`
-      INSERT INTO sessions (id, date, buy_in_amount, chip_ratio, is_custom_ratio, custom_cash_amount, custom_chip_amount, is_active)
-      VALUES (${id}, ${date}, ${buyInAmount}, ${chipRatio}, ${isCustomRatio ?? false}, ${customCashAmount ?? null}, ${customChipAmount ?? null}, TRUE)
+      INSERT INTO sessions (id, date, buy_in_amount, chip_ratio, is_custom_ratio, custom_cash_amount, custom_chip_amount, is_active, game_type, session_name)
+      VALUES (${id}, ${date}, ${buyInAmount}, ${chipRatio}, ${isCustomRatio ?? false}, ${customCashAmount ?? null}, ${customChipAmount ?? null}, TRUE, ${type}, ${sessionName || 'Main'})
     `;
     if (members && members.length > 0) {
       for (const m of members) {
@@ -61,12 +81,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) return res.status(400).json({ error: 'id required' });
 
     if (action === 'end') {
-      const { memberChips } = body;
-      await sql`UPDATE sessions SET is_active = FALSE WHERE id = ${id}`;
-      for (const mc of memberChips) {
-        await sql`UPDATE session_members SET chips_left = ${mc.chipsLeft} WHERE session_id = ${id} AND member_id = ${mc.memberId}`;
+      try {
+        const result = await completeOfflineSession(id, body.memberChips);
+        return res.status(200).json(result);
+      } catch (e) {
+        return res.status(400).json({ error: e instanceof Error ? e.message : 'Failed to end session' });
       }
-      return res.status(200).json({ ok: true });
+    }
+
+    if (action === 'endOnline') {
+      try {
+        const result = await completeOnlineSession(id, body.memberChipPnl);
+        return res.status(200).json(result);
+      } catch (e) {
+        return res.status(400).json({ error: e instanceof Error ? e.message : 'Failed to end session' });
+      }
     }
 
     if (action === 'addBuyIn') {
@@ -95,13 +124,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         VALUES (${id}, ${body.memberId}, 1, NULL)
         ON CONFLICT (session_id, member_id) DO NOTHING
       `;
-      return res.status(200).json({ ok: true });
-    }
-
-    if (action === 'updateMembers') {
-      for (const m of body.members) {
-        await sql`UPDATE session_members SET buy_ins = ${m.buyIns}, chips_left = ${m.chipsLeft} WHERE session_id = ${id} AND member_id = ${m.memberId}`;
-      }
       return res.status(200).json({ ok: true });
     }
 

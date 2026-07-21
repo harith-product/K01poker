@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: k01
+      POSTGRES_PASSWORD: k01local
+      POSTGRES_DB: k01poker
+    volumes:
+      - k01pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U k01 -d k01poker"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  k01pgdata:

@@ -64,7 +64,8 @@ export function HomeTab({ players, sessions, onPlayerClick, period }: HomeTabPro
     return (
       <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-500">
         <Trophy className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-        <p>No data yet. Connect your Google Sheet to get started.</p>
+        <p>No data for this mode yet.</p>
+        <p className="text-sm mt-2">Try switching Online / Offline / Combined at the top, or complete a session in Admin.</p>
       </div>
     );
   }

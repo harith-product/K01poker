@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { getSessions, fmtDate } from '../../lib/adminData';
+import { getSessions, fmtDate, gameTypeLabel } from '../../lib/adminData';
 import type { Session } from '../../lib/adminData';
 
 interface PastSessionsProps {
@@ -48,12 +48,20 @@ export function PastSessions({ onBack, onSelectSession }: PastSessionsProps) {
                   className="w-full p-4 bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 rounded-2xl transition-all text-left">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 text-lg mb-2">{fmtDate(s.date)}</h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div><p className="text-xs text-gray-400">Buy-ins</p><p className="font-bold text-gray-900">{totalBuyIns}</p></div>
-                        <div><p className="text-xs text-gray-400">Players</p><p className="font-bold text-gray-900">{s.members.length}</p></div>
-                        <div><p className="text-xs text-gray-400">Chips Out</p><p className="font-bold text-gray-900">{totalChipsOut}</p></div>
-                      </div>
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">{fmtDate(s.date)}</h3>
+                      <p className="text-xs text-gray-500 mb-2">{gameTypeLabel(s.gameType)} · {s.members.length} players</p>
+                      {s.gameType === 'offline' ? (
+                        <div className="grid grid-cols-3 gap-4">
+                          <div><p className="text-xs text-gray-400">Buy-ins</p><p className="font-bold text-gray-900">{totalBuyIns}</p></div>
+                          <div><p className="text-xs text-gray-400">Players</p><p className="font-bold text-gray-900">{s.members.length}</p></div>
+                          <div><p className="text-xs text-gray-400">Chips Out</p><p className="font-bold text-gray-900">{totalChipsOut}</p></div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div><p className="text-xs text-gray-400">Players</p><p className="font-bold text-gray-900">{s.members.length}</p></div>
+                          <div><p className="text-xs text-gray-400">Rake</p><p className="font-bold text-gray-900">{s.rakeAmount != null ? `₹${s.rakeAmount}` : '—'}</p></div>
+                        </div>
+                      )}
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 ml-2" />
                   </div>

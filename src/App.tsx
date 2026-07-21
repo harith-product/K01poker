@@ -7,8 +7,8 @@ import { GamesTab } from './components/GamesTab';
 import { BalanceTab } from './components/BalanceTab';
 import { AdminTab } from './components/AdminTab';
 import { PlayerDetailSheet } from './components/PlayerDetailSheet';
-import { fetchSheetData, fetchOfflineSheetData, fetchBalanceData, fetchTournamentData } from './lib/googleSheets';
-import type { Player, GameSession, BalanceData } from './lib/types';
+import { fetchOnlineGameData, fetchOfflineGameData, fetchTournamentData, fetchOfflineTournamentData } from './lib/gameData';
+import type { Player, GameSession } from './lib/types';
 import { displayName } from './lib/displayNames';
 
 export type GameMode = 'online' | 'offline' | 'combined';
@@ -19,11 +19,14 @@ interface AppData {
   onlineSessions: GameSession[];
   tournamentPlayers: Player[];
   tournamentSessions: GameSession[];
+  offlineTournamentPlayers: Player[];
+  offlineTournamentSessions: GameSession[];
   offlinePlayers: Player[];
   offlineSessions: GameSession[];
-  balance: BalanceData;
   loading: boolean;
   error: string | null;
+  refresh: () => void;
+  dataVersion: number;
 }
 
 function useAppData(): AppData {
@@ -31,31 +34,75 @@ function useAppData(): AppData {
   const [onlineSessions, setOnlineSessions] = useState<GameSession[]>([]);
   const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
   const [tournamentSessions, setTournamentSessions] = useState<GameSession[]>([]);
+  const [offlineTournamentPlayers, setOfflineTournamentPlayers] = useState<Player[]>([]);
+  const [offlineTournamentSessions, setOfflineTournamentSessions] = useState<GameSession[]>([]);
   const [offlinePlayers, setOfflinePlayers] = useState<Player[]>([]);
   const [offlineSessions, setOfflineSessions] = useState<GameSession[]>([]);
-  const [balance, setBalance] = useState<BalanceData>({ owesHouse: [], houseOwes: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = () => setRefreshKey(k => k + 1);
 
   useEffect(() => {
-    fetchOfflineSheetData()
-      .then(offline => { setOfflinePlayers(offline.players); setOfflineSessions(offline.sessions); setLoading(false); })
-      .catch(err => { setError(err.message); setLoading(false); });
+    const isInitialLoad = refreshKey === 0;
+    if (isInitialLoad) setLoading(true);
+    setError(null);
 
-    fetchSheetData()
-      .then(online => { setOnlinePlayers(online.players); setOnlineSessions(online.sessions); })
-      .catch(() => {});
+    Promise.all([
+      fetchOfflineGameData(),
+      fetchOnlineGameData(),
+      fetchTournamentData(),
+      fetchOfflineTournamentData(),
+    ])
+      .then(([offline, online, tournament, offlineTournament]) => {
+        setOfflinePlayers(offline.players);
+        setOfflineSessions(offline.sessions);
+        setOnlinePlayers(online.players);
+        setOnlineSessions(online.sessions);
+        setTournamentPlayers(tournament.players);
+        setTournamentSessions(tournament.sessions);
+        setOfflineTournamentPlayers(offlineTournament.players);
+        setOfflineTournamentSessions(offlineTournament.sessions);
+        if (isInitialLoad) setLoading(false);
+      })
+      .catch(err => {
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+        if (isInitialLoad) setLoading(false);
+      });
+  }, [refreshKey]);
 
-    fetchTournamentData()
-      .then(t => { setTournamentPlayers(t.players); setTournamentSessions(t.sessions); })
-      .catch(() => {});
+  return {
+    onlinePlayers, onlineSessions, tournamentPlayers, tournamentSessions,
+    offlineTournamentPlayers, offlineTournamentSessions,
+    offlinePlayers, offlineSessions, loading, error, refresh, dataVersion: refreshKey,
+  };
+}
 
-    fetchBalanceData()
-      .then(bal => setBalance(bal))
-      .catch(() => {});
-  }, []);
+function playersForView(data: AppData, mode: GameMode, gameType: GameType): Player[] {
+  const offlineCash = data.offlinePlayers;
+  const offlineTourn = data.offlineTournamentPlayers;
+  const onlineCash = data.onlinePlayers;
+  const onlineTourn = data.tournamentPlayers;
 
-  return { onlinePlayers, onlineSessions, tournamentPlayers, tournamentSessions, offlinePlayers, offlineSessions, balance, loading, error };
+  if (mode === 'offline') return gameType === 'tournament' ? offlineTourn : offlineCash;
+  if (mode === 'online') return gameType === 'tournament' ? onlineTourn : onlineCash;
+  return gameType === 'tournament'
+    ? mergePlayers(offlineTourn, onlineTourn)
+    : mergePlayers(offlineCash, onlineCash);
+}
+
+function sessionsForView(data: AppData, mode: GameMode, gameType: GameType): GameSession[] {
+  const offlineCash = data.offlineSessions;
+  const offlineTourn = data.offlineTournamentSessions;
+  const onlineCash = data.onlineSessions;
+  const onlineTourn = data.tournamentSessions;
+
+  if (mode === 'offline') return gameType === 'tournament' ? offlineTourn : offlineCash;
+  if (mode === 'online') return gameType === 'tournament' ? onlineTourn : onlineCash;
+  return gameType === 'tournament'
+    ? [...offlineTourn, ...onlineTourn]
+    : [...offlineCash, ...onlineCash];
 }
 
 function PlayerPage({ data }: { data: AppData }) {
@@ -64,25 +111,8 @@ function PlayerPage({ data }: { data: AppData }) {
 
   const mode = (localStorage.getItem('gameMode') as GameMode) ?? 'offline';
   const gameType = (localStorage.getItem('gameType') as GameType) ?? 'cash';
-  const activeonlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
-  const combined = mergePlayers(data.offlinePlayers, activeonlinePlayers);
-
-  let players: Player[];
-  let player: Player | null;
-
-  if (mode === 'combined') {
-    players = combined;
-    player = combined.find(p => p.id === id) ?? null;
-  } else {
-    const source = mode === 'online' ? activeonlinePlayers : data.offlinePlayers;
-    players = source;
-    player = source.find(p => p.id === id) ?? null;
-    if (!player) {
-      const other = mode === 'online' ? data.offlinePlayers : activeonlinePlayers;
-      player = other.find(p => p.id === id) ?? null;
-      if (player) players = other;
-    }
-  }
+  const players = playersForView(data, mode, gameType);
+  const player = players.find(p => p.id === id) ?? null;
 
   // Show spinner while data hasn't arrived yet (loading or no players fetched yet)
   const stillLoading = data.loading || (data.offlinePlayers.length === 0 && data.onlinePlayers.length === 0);
@@ -151,7 +181,7 @@ function mergePlayers(offline: Player[], online: Player[]): Player[] {
 
 function MainApp({ data }: { data: AppData }) {
   const [activeTab, setActiveTab] = useState<TabType>(() => (localStorage.getItem('activeTab') as TabType) ?? 'home');
-  const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'offline');
+  const [mode, setMode] = useState<GameMode>(() => (localStorage.getItem('gameMode') as GameMode) ?? 'combined');
   const [gameType, setGameType] = useState<GameType>(() => (localStorage.getItem('gameType') as GameType) ?? 'cash');
   const [modeOpen, setModeOpen] = useState(false);
   const [period, setPeriod] = useState<TimePeriod>('overall');
@@ -159,14 +189,8 @@ function MainApp({ data }: { data: AppData }) {
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  const onlinePlayers = gameType === 'tournament' ? data.tournamentPlayers : data.onlinePlayers;
-  const onlineSessions = gameType === 'tournament' ? data.tournamentSessions : data.onlineSessions;
-
-  const combinedPlayers = mergePlayers(data.offlinePlayers, onlinePlayers);
-  const combinedSessions = [...data.offlineSessions, ...onlineSessions];
-
-  const players = mode === 'online' ? onlinePlayers : mode === 'offline' ? data.offlinePlayers : combinedPlayers;
-  const sessions = mode === 'online' ? onlineSessions : mode === 'offline' ? data.offlineSessions : combinedSessions;
+  const players = playersForView(data, mode, gameType);
+  const sessions = sessionsForView(data, mode, gameType);
 
   const handleGameTypeChange = (t: GameType) => {
     setGameType(t);
@@ -183,6 +207,7 @@ function MainApp({ data }: { data: AppData }) {
   }, []);
 
   const handleTabChange = (tab: TabType) => {
+    if (activeTab === 'admin' && tab !== 'admin') data.refresh();
     setActiveTab(tab);
     localStorage.setItem('activeTab', tab);
     mainRef.current?.scrollTo({ top: 0 });
@@ -231,23 +256,21 @@ function MainApp({ data }: { data: AppData }) {
                 </>
               )}
             </div>
-            {/* Cash / Tournament toggle — when Online or Combined */}
-            {(mode === 'online' || mode === 'combined') && (
-              <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-0.5">
-                <button
-                  onClick={() => handleGameTypeChange('cash')}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'cash' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
-                >
-                  Cash
-                </button>
-                <button
-                  onClick={() => handleGameTypeChange('tournament')}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'tournament' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
-                >
-                  Tourn.
-                </button>
-              </div>
-            )}
+            {/* Cash / Tournament toggle */}
+            <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-0.5">
+              <button
+                onClick={() => handleGameTypeChange('cash')}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'cash' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
+              >
+                Cash
+              </button>
+              <button
+                onClick={() => handleGameTypeChange('tournament')}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${gameType === 'tournament' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
+              >
+                Tourn.
+              </button>
+            </div>
             {activeTab === 'home' && (
               <div className="relative ml-auto">
                 <button
@@ -275,35 +298,33 @@ function MainApp({ data }: { data: AppData }) {
           </div>
         </div>
 
-        {data.loading && (
+        <div className={activeTab === 'admin' ? undefined : 'hidden'}>
+          <AdminTab />
+        </div>
+
+        {activeTab !== 'admin' && data.loading && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center text-gray-500">
             <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p>Loading leaderboard…</p>
           </div>
         )}
-        {data.error && (
+        {activeTab !== 'admin' && data.error && (
           <div className="max-w-lg mx-auto px-4 pt-20 text-center">
             <p className="text-red-500 mb-2">Failed to load data</p>
             <p className="text-gray-500 text-sm">{data.error}</p>
           </div>
         )}
-        {!data.loading && !data.error && (
+        {activeTab !== 'admin' && !data.loading && !data.error && (
           <>
             {activeTab === 'home' && <HomeTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} period={period} />}
             {activeTab === 'leaderboard' && <StatsTab players={players} sessions={sessions} onPlayerClick={handlePlayerClick} />}
             {activeTab === 'games' && <GamesTab sessions={sessions} players={players} onPlayerClick={handlePlayerClick} />}
-            {activeTab === 'balance' && <BalanceTab onlinePlayers={data.onlinePlayers} mode={mode} />}
-            {activeTab === 'admin' && <AdminTab mode={mode} onlinePlayers={data.onlinePlayers} recentSessionsPlayers={
-              [...(data.offlineSessions.length ? data.offlineSessions : data.onlineSessions)]
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .slice(0, 10)
-                .map(s => Object.entries(s.players).filter(([, v]) => v !== 0).map(([k]) => k))
-            } />}
+            {activeTab === 'balance' && <BalanceTab refreshKey={data.dataVersion} />}
           </>
         )}
       </main>
 
-      <Navigation activeTab={activeTab} setActiveTab={handleTabChange} mode={mode} />
+      <Navigation activeTab={activeTab} setActiveTab={handleTabChange} />
     </div>
   );
 }

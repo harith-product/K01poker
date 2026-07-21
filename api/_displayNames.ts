@@ -1,5 +1,5 @@
-/** Keep in sync with api/_displayNames.ts */
-const NAME_MAP: Record<string, string> = {
+/** Keep in sync with src/lib/displayNames.ts */
+export const NAME_MAP: Record<string, string> = {
   'ankur1997': 'Ankur',
   'Knight@09': 'Sam',
   'abhinav7': 'Abhinav',
@@ -26,7 +26,6 @@ const NAME_MAP: Record<string, string> = {
   'Ghost@KS': 'Kavish',
   'D.J Saket': 'Saket',
   'FT_SSS': 'Shiva',
-  'DJ_2805': 'Dvij'
 };
 
 export function displayName(name: string): string {

@@ -5,27 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:full": "vercel dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:init": "tsx scripts/init-db.ts",
+    "db:reset": "tsx scripts/reset-db.ts",
+    "import:csv": "tsx scripts/import-csv.ts",
+    "db:seed": "curl -s -X POST http://localhost:3000/api/seed | cat",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
-    "@radix-ui/react-dialog": "^1.1.16",
-    "@radix-ui/react-select": "^2.3.0",
-    "@radix-ui/react-tabs": "^1.1.14",
     "@tailwindcss/vite": "^4.3.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "html2canvas": "^1.4.1",
     "lucide-react": "^1.18.0",
+    "postgres": "^3.4.7",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0",
     "recharts": "^3.8.1",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
@@ -35,12 +35,15 @@
     "@types/react-dom": "^19.2.3",
     "@vercel/node": "^5.8.17",
     "@vitejs/plugin-react": "^6.0.1",
+    "dotenv": "^16.5.0",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "tsx": "^4.20.5",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
+    "vercel": "^48.1.6",
     "vite": "^8.0.12"
   }
 }

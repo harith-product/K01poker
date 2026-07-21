@@ -1,8 +1,15 @@
 import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 
-export const sql = neon(process.env.DATABASE_URL);
+const connectionString = process.env.DATABASE_URL;
+const isLocal = /localhost|127\.0\.0\.1/.test(connectionString);
+
+// Neon serverless driver for production; postgres.js for local Docker Postgres
+export const sql = isLocal
+  ? postgres(connectionString)
+  : neon(connectionString);
 
 export async function initSchema() {
   await sql`
@@ -39,47 +46,40 @@ export async function initSchema() {
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS initial_balances (
-      player_name TEXT PRIMARY KEY,
-      amount      NUMERIC NOT NULL
-    )
-  `;
-
-  await sql`
     CREATE TABLE IF NOT EXISTS settlements (
       id          SERIAL PRIMARY KEY,
       player_name TEXT NOT NULL,
       amount      NUMERIC NOT NULL,
       direction   TEXT NOT NULL,
+      mode        TEXT NOT NULL DEFAULT 'offline',
       notes       TEXT,
       recorded_by TEXT,
       created_at  TIMESTAMPTZ DEFAULT NOW()
     )
   `;
 
-  // Seed initial balance snapshot (runs once — ON CONFLICT DO NOTHING)
-  const seed: [string, number][] = [
-    // Players owe house (negative = player owes)
-    ['Ankur', -17390.5], ['Yatin', -15460.25], ['Unaccounted', -12999.25],
-    ['Subhinav', -7000], ['Sushant', -6346.75], ['Jishnu', -3513.5],
-    ['Yash', -2542.5], ['Saket', -2537.75], ['Ashish', -2341],
-    ['Shiva', -2340.5], ['Yashvardhan', -1142.5], ['Harith', -1000.25],
-    ['Harshita', -804.5], ['Shikha', -687.5], ['Kavish', -654.5],
-    ['Alok', -597], ['Richa', -500], ['Shubham', -500],
-    ['Sawrav', -362.75], ['Saurabh', -250], ['Ishan', -102.25],
-    ['Aman', -61.75], ['Pawan', -11.75],
-    // House owes players (positive = house owes)
-    ['Ankit', 39953], ['Kislay', 24937.25], ['Mansi', 6893],
-    ['Abhinav', 5849.25], ['Kshitij', 2201], ['Mac', 1800],
-    ['Sam', 1025.75], ['Rohit', 366.75], ['Vikas', 281.25],
-    ['Akshay', 206.75], ['Sid', 119.5], ['Prashant', 66],
-    ['Pallavi', 15.25], ['Dvij', 12.75], ['Amey', 9],
-  ];
-  for (const [name, amount] of seed) {
-    await sql`
-      INSERT INTO initial_balances (player_name, amount)
-      VALUES (${name}, ${amount})
-      ON CONFLICT (player_name) DO NOTHING
-    `;
-  }
+  await sql`
+    ALTER TABLE settlements
+    ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'offline'
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS player_balances (
+      player_name TEXT NOT NULL,
+      mode        TEXT NOT NULL,
+      amount      NUMERIC NOT NULL DEFAULT 0,
+      updated_at  TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (player_name, mode)
+    )
+  `;
+
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS game_type TEXT NOT NULL DEFAULT 'offline'`;
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS session_name TEXT DEFAULT 'Main'`;
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS rake_amount NUMERIC`;
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'admin'`;
+
+  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS chip_pnl NUMERIC`;
+  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS gross_pnl NUMERIC`;
+  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS balance_pnl NUMERIC`;
 }
