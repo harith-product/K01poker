@@ -12,8 +12,11 @@ export const sql = isLocal
   : neon(connectionString);
 
 export async function initSchema() {
+  // Neon pooler connections may have an empty search_path; qualify schema explicitly.
+  if (!isLocal) await sql`SET search_path TO public`;
+
   await sql`
-    CREATE TABLE IF NOT EXISTS members (
+    CREATE TABLE IF NOT EXISTS public.members (
       id        TEXT PRIMARY KEY,
       name      TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
@@ -21,7 +24,7 @@ export async function initSchema() {
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS sessions (
+    CREATE TABLE IF NOT EXISTS public.sessions (
       id                TEXT PRIMARY KEY,
       date              DATE NOT NULL,
       buy_in_amount     NUMERIC NOT NULL,
@@ -35,10 +38,10 @@ export async function initSchema() {
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS session_members (
+    CREATE TABLE IF NOT EXISTS public.session_members (
       id          SERIAL PRIMARY KEY,
-      session_id  TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-      member_id   TEXT NOT NULL REFERENCES members(id),
+      session_id  TEXT NOT NULL REFERENCES public.sessions(id) ON DELETE CASCADE,
+      member_id   TEXT NOT NULL REFERENCES public.members(id),
       buy_ins     INTEGER NOT NULL DEFAULT 1,
       chips_left  NUMERIC,
       UNIQUE(session_id, member_id)
@@ -46,7 +49,7 @@ export async function initSchema() {
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS settlements (
+    CREATE TABLE IF NOT EXISTS public.settlements (
       id          SERIAL PRIMARY KEY,
       player_name TEXT NOT NULL,
       amount      NUMERIC NOT NULL,
@@ -59,12 +62,12 @@ export async function initSchema() {
   `;
 
   await sql`
-    ALTER TABLE settlements
+    ALTER TABLE public.settlements
     ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'offline'
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS player_balances (
+    CREATE TABLE IF NOT EXISTS public.player_balances (
       player_name TEXT NOT NULL,
       mode        TEXT NOT NULL,
       amount      NUMERIC NOT NULL DEFAULT 0,
@@ -73,13 +76,13 @@ export async function initSchema() {
     )
   `;
 
-  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS game_type TEXT NOT NULL DEFAULT 'offline'`;
-  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS session_name TEXT DEFAULT 'Main'`;
-  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS rake_amount NUMERIC`;
-  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
-  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'admin'`;
+  await sql`ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS game_type TEXT NOT NULL DEFAULT 'offline'`;
+  await sql`ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS session_name TEXT DEFAULT 'Main'`;
+  await sql`ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS rake_amount NUMERIC`;
+  await sql`ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'admin'`;
 
-  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS chip_pnl NUMERIC`;
-  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS gross_pnl NUMERIC`;
-  await sql`ALTER TABLE session_members ADD COLUMN IF NOT EXISTS balance_pnl NUMERIC`;
+  await sql`ALTER TABLE public.session_members ADD COLUMN IF NOT EXISTS chip_pnl NUMERIC`;
+  await sql`ALTER TABLE public.session_members ADD COLUMN IF NOT EXISTS gross_pnl NUMERIC`;
+  await sql`ALTER TABLE public.session_members ADD COLUMN IF NOT EXISTS balance_pnl NUMERIC`;
 }
