@@ -66,11 +66,13 @@ export function SessionDetails({ sessionId, onBack }: SessionDetailsProps) {
     const chipsEntered = memberChips.reduce((s, m) => s + m.chipsLeft, 0);
     if (chipsEntered !== totalChipsGiven) { toast('Remaining amount should be 0 to end the session', 'error'); return; }
     try {
-      await endSessionForAll(sessionId, memberChips);
-      toast('Session ended for all!');
+      const result = await endSessionForAll(sessionId, memberChips);
+      toast(`Session ended! Rake: ₹${result.rake.toLocaleString()}`);
       setSheet('none');
       setTimeout(() => { setAllChips({}); onBack(); }, 800);
-    } catch { toast('Failed to end session', 'error'); }
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Failed to end session', 'error');
+    }
   }
 
   async function handleAddMember() {
